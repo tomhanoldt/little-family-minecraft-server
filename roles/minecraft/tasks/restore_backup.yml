@@ -1,0 +1,74 @@
+---
+- name: Fail fast if no backup file was specified
+  ansible.builtin.fail:
+    msg: >-
+      Pass -e restore_backup_file=<path-to-file-in-backups-offbox> (use
+      'make backup-restore' instead of calling this directly).
+  when: restore_backup_file is not defined
+
+- name: Stop the Minecraft server and backup sidecar before restoring
+  community.docker.docker_compose_v2:
+    project_src: "{{ mc_data_dir }}"
+    state: stopped
+
+- name: Create directory for the pre-restore safety copy
+  ansible.builtin.file:
+    path: "{{ mc_data_dir }}/pre-restore-safety"
+    state: directory
+    mode: "0755"
+
+# ansible.builtin.archive wraps the source directory itself in the tarball
+# (a "data/" folder on extraction) rather than flattening its contents -
+# that would make this safety copy incompatible with our own restore
+# mechanism below, which (matching itzg/mc-backup's own convention) expects
+# a flat tar extractable directly into /data. -C plus a literal "." here
+# keeps that flat structure, so this file could itself be fed back through
+# `make backup-restore` unmodified if ever needed.
+- name: Save current /data aside before wiping it (undo path if this restore is a mistake)  # noqa: command-instead-of-module
+  ansible.builtin.command: >-
+    tar czf {{ mc_data_dir }}/pre-restore-safety/data-{{ ansible_date_time.iso8601_basic_short }}.tar.gz
+    -C {{ mc_data_dir }}/data .
+  args:
+    chdir: "{{ mc_data_dir }}"
+  changed_when: true
+
+- name: Upload the chosen backup file to the mini-PC
+  ansible.builtin.copy:
+    src: "{{ restore_backup_file }}"
+    dest: "{{ mc_data_dir }}/restore-staging.tgz"
+    mode: "0644"
+
+- name: Remove current /data contents (safety copy was just taken above)
+  ansible.builtin.file:
+    path: "{{ mc_data_dir }}/data"
+    state: absent
+
+- name: Recreate empty /data directory
+  ansible.builtin.file:
+    path: "{{ mc_data_dir }}/data"
+    state: directory
+    mode: "0755"
+
+- name: Extract the chosen backup into /data
+  ansible.builtin.unarchive:
+    src: "{{ mc_data_dir }}/restore-staging.tgz"
+    dest: "{{ mc_data_dir }}/data"
+    remote_src: true
+
+- name: Remove the staging copy of the uploaded backup
+  ansible.builtin.file:
+    path: "{{ mc_data_dir }}/restore-staging.tgz"
+    state: absent
+
+- name: Start the Minecraft server and backup sidecar again
+  community.docker.docker_compose_v2:
+    project_src: "{{ mc_data_dir }}"
+    state: present
+
+- name: Report restore completion
+  ansible.builtin.debug:
+    msg: >-
+      Restored {{ restore_backup_file }} into {{ mc_data_dir }}/data.
+      The previous data is saved at
+      {{ mc_data_dir }}/pre-restore-safety/data-{{ ansible_date_time.iso8601_basic_short }}.tar.gz
+      in case this restore needs undoing.

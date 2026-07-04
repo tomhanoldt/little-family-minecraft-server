@@ -87,6 +87,12 @@
   when: mc_type | upper == 'PAPER' and mc_version | upper != 'LATEST'
   tags: paper_update_check
 
+- name: Restore a chosen backup onto this server (only runs when explicitly tagged)
+  ansible.builtin.import_tasks: restore_backup.yml
+  tags:
+    - never
+    - backup_restore
+
 - name: Note about DiscordSRV
   ansible.builtin.debug:
     msg: >-

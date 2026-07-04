@@ -103,6 +103,21 @@ backup-pull:
 	@mkdir -p backups-offbox
 	docker compose run --rm -v $(PWD)/backups-offbox:/backups-offbox ansible rsync -az -e "ssh -o StrictHostKeyChecking=accept-new" mono@minecraft-server:/opt/minecraft/backups/ /backups-offbox/
 
+# Interactively pick a backup from ./backups-offbox/ (newest first) and
+# restore it onto the live server. STOPS the server and REPLACES current
+# world/plugin data - the current state is tar'd aside on the mini-PC first
+# (see pre-restore-safety/ under mc_data_dir) so this can be undone.
+backup-restore:
+	@ls -1t backups-offbox/*.tgz backups-offbox/*.tar.gz 2>/dev/null | nl -w2 -s') ' || \
+		(echo "No backup files found in ./backups-offbox/ - run 'make backup-pull' first." && exit 1)
+	@read -p "Enter the number of the backup to restore: " num; \
+	file=$$(ls -1t backups-offbox/*.tgz backups-offbox/*.tar.gz 2>/dev/null | sed -n "$${num}p"); \
+	if [ -z "$$file" ]; then echo "Invalid selection."; exit 1; fi; \
+	echo "Selected: $$file"; \
+	read -p "This STOPS the live server and REPLACES all current world/plugin data with this backup (current data is saved aside first on the mini-PC). Type 'yes' to continue: " confirm; \
+	if [ "$$confirm" != "yes" ]; then echo "Aborted."; exit 1; fi; \
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags backup_restore -e restore_backup_file=$$file
+
 # Spins up the real itzg images against a throwaway local data dir (never the
 # real mini-PC) to catch broken plugin resolution etc. before deploying -
 # same check CI runs on every push.
