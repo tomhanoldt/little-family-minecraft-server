@@ -29,3 +29,7 @@
 - name: Set up passwordless sudo for the SSH user
   ansible.builtin.import_tasks: sudo.yml
   tags: sudo_nopasswd
+
+- name: Remove unrelated OS bloat (leftover snaps, stray graphical target)
+  ansible.builtin.import_tasks: os_cleanup.yml
+  tags: os_cleanup

@@ -1,0 +1,39 @@
+---
+# Found via direct inspection: this box carries unrelated infra tooling and a
+# stray graphical boot target left over from whatever VM template/image it
+# was provisioned from - none of it has anything to do with this Minecraft
+# server, so it's just needless attack surface and resource use.
+
+- name: Remove unrelated snap packages (lxd, etcd, prometheus)
+  community.general.snap:
+    name:
+      - lxd
+      - etcd
+      - prometheus
+    state: absent
+
+- name: Remove ModemManager (no cellular modem on this box)
+  ansible.builtin.apt:
+    name: modemmanager
+    state: absent
+    purge: true
+
+- name: Remove open-vm-tools (this is bare metal, not a VM)
+  ansible.builtin.apt:
+    name: open-vm-tools
+    state: absent
+    purge: true
+
+- name: Remove packages orphaned by the above (libmbim-utils, usb-modeswitch, etc.)
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+
+- name: Check current default systemd target
+  ansible.builtin.command: systemctl get-default
+  register: default_target
+  changed_when: false
+
+- name: Set default systemd target to multi-user (headless, no display manager present anyway)
+  ansible.builtin.command: systemctl set-default multi-user.target
+  when: default_target.stdout != "multi-user.target"
