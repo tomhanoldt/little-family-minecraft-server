@@ -91,6 +91,18 @@ ssh-copy-key:
 server-check-updates:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags vuln_check
 
+server-check-paper-updates:
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags paper_update_check
+
+# Pulls backups off the mini-PC to ./backups-offbox/ - deliberately no
+# --delete, so this only ever accumulates: if the box's own retention prunes
+# an old backup (or the box is compromised/dies entirely), the copies we've
+# already pulled here stay put instead of getting wiped along with it.
+backup-pull:
+	@make .print-header msg="pulling backups from the mini-PC to ./backups-offbox/ (independent of the box's own disk/retention)"
+	@mkdir -p backups-offbox
+	docker compose run --rm -v $(PWD)/backups-offbox:/backups-offbox ansible rsync -az -e "ssh -o StrictHostKeyChecking=accept-new" mono@minecraft-server:/opt/minecraft/backups/ /backups-offbox/
+
 # Spins up the real itzg images against a throwaway local data dir (never the
 # real mini-PC) to catch broken plugin resolution etc. before deploying -
 # same check CI runs on every push.

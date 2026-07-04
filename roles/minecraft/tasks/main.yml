@@ -53,6 +53,40 @@
     hour: "{{ playtime_stop_cron.split(' ')[1] }}"
   when: enable_playtime_schedule | bool
 
+- name: Query available Paper builds for the pinned version
+  ansible.builtin.uri:
+    url: "https://fill.papermc.io/v3/projects/paper/versions/{{ mc_version }}/builds"
+    headers:
+      User-Agent: "little-family-mincraft-server-ansible/1.0"
+    return_content: true
+  register: paper_builds
+  when: mc_type | upper == 'PAPER' and mc_version | upper != 'LATEST'
+  tags: paper_update_check
+
+- name: Find currently installed Paper jar
+  ansible.builtin.shell: >-
+    set -o pipefail && ls {{ mc_data_dir }}/data/paper-{{ mc_version }}-*.jar 2>/dev/null | head -1
+  args:
+    executable: /bin/bash
+  register: installed_paper_jar
+  changed_when: false
+  failed_when: false
+  when: mc_type | upper == 'PAPER' and mc_version | upper != 'LATEST'
+  tags: paper_update_check
+
+- name: Show Paper update status
+  ansible.builtin.debug:
+    msg:
+      - "Currently installed: {{ installed_paper_jar.stdout | default('not deployed yet') }}"
+      - "Latest stable build for {{ mc_version }}: {{ latest_stable_build }}"
+  vars:
+    latest_stable_build: >-
+      {{ (paper_builds.json | selectattr('channel', 'equalto', 'STABLE') | map(attribute='id') | list | sort | last)
+         if (paper_builds.json is defined and (paper_builds.json | selectattr('channel', 'equalto', 'STABLE') | list | length > 0))
+         else 'none found' }}
+  when: mc_type | upper == 'PAPER' and mc_version | upper != 'LATEST'
+  tags: paper_update_check
+
 - name: Note about DiscordSRV
   ansible.builtin.debug:
     msg: >-
