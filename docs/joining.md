@@ -22,15 +22,54 @@ Two options:
     Microsoft requires for legal child-consent reasons.
   - Console players additionally need their platform's own paid online
     subscription (Xbox Live Gold, PS Plus). Phone/tablet/Windows do not.
-- **Java Edition**: a paid Java Edition account, played on PC/Mac. No
-  Microsoft Family requirement, but requires purchasing Java Edition
-  separately if you don't already own it, and a computer to run it on
-  rather than a phone/tablet.
+- **Java Edition**: a paid account (bundled with a PC copy of Bedrock as of
+  2026 - see [`account-decision.md`](account-decision.md) for current
+  pricing), played on PC/Mac rather than phone/tablet. Also requires the
+  same Microsoft Family setup for minors as Bedrock - this isn't something
+  either edition avoids.
 
 Each player needs **their own individual account** - not a shared one.
 Sharing an account across multiple people breaks per-player identity on
 the server (whitelist, GriefPrevention claims, inventory/progress would
 all collide onto one shared identity).
+
+### Setting up the Microsoft Family group and child account
+
+If you don't already have this set up:
+
+1. Sign in at [family.microsoft.com](https://family.microsoft.com) with
+   your own Microsoft account (this makes you the "organizer").
+2. Select **Add a family member** → choose **Member** for a child (not
+   **Organizer**, which is for adults).
+3. If your child already has a Microsoft account, enter its email. If not,
+   select **Create one** → **Get a new email address** to create a new
+   `@outlook.com` address for them as part of this same flow - you don't
+   need to set anything up separately first.
+4. Enter their name and date of birth. Since they're a minor, you'll be
+   prompted to give parental consent - this is Microsoft's own legal
+   requirement, not something this server adds.
+5. Sign the child into the Minecraft app using that new account.
+
+### Adding another child as a friend
+
+If your kids are on Xbox privacy settings that restrict play to friends
+only (recommended - see [`account-decision.md`](account-decision.md)),
+two children from *different* families need to actually be Xbox friends
+for this to work, and this requires **parental approval on both sides**,
+not just the kids adding each other:
+
+1. One child sends a friend request by searching the other's gamertag
+   (Xbox app or in-game: People → Find someone).
+2. If parental approval is enabled (the default for child accounts), the
+   *sending* child's parent must approve the request being sent.
+3. The *receiving* child's parent must then approve accepting it.
+4. Both parents can manage this via the
+   [Xbox Family Settings app](https://www.xbox.com/en-US/apps/family-settings-app)
+   on their own phone, which sends a real-time notification for incoming
+   requests rather than requiring you to be at the console/PC.
+
+Coordinate with the other parent so both approvals actually happen -
+otherwise the request just sits pending.
 
 ### A Tailscale invite
 
