@@ -77,7 +77,7 @@ discord_webhook_url: ""          # only needed if enable_discord_bridge: true
 # the server automatically only within this time window.
 enable_playtime_schedule: false
 playtime_start_cron: "0 14 * * *"   # start daily at 14:00
-playtime_stop_cron:  "0 19 * * *"   # stop daily at 19:00
+playtime_stop_cron: "0 19 * * *"    # stop daily at 19:00
 
 # =============================================================
 # BACKUP

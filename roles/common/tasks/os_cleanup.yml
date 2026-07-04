@@ -37,3 +37,4 @@
 - name: Set default systemd target to multi-user (headless, no display manager present anyway)
   ansible.builtin.command: systemctl set-default multi-user.target
   when: default_target.stdout != "multi-user.target"
+  changed_when: true

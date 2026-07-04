@@ -5,10 +5,12 @@
   changed_when: false
   failed_when: false
 
-- name: Download and run the Tailscale install script
+- name: Download and run the Tailscale install script  # noqa: command-instead-of-module
   ansible.builtin.shell: |
+    set -o pipefail
     curl -fsSL https://tailscale.com/install.sh | sh
   args:
+    executable: /bin/bash
     creates: /usr/bin/tailscale
   when: tailscale_check.rc != 0
 
@@ -37,4 +39,6 @@
 
 - name: Show Tailscale IP
   ansible.builtin.debug:
-    msg: "Mini-PC is reachable on the tailnet at: {{ tailscale_ip.stdout | default('not connected - please check tailscale_authkey or run tailscale up manually') }}"
+    msg: >-
+      Mini-PC is reachable on the tailnet at:
+      {{ tailscale_ip.stdout | default('not connected - please check tailscale_authkey or run tailscale up manually') }}

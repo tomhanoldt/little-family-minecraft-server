@@ -9,7 +9,7 @@
       - containerd
       - runc
     state: absent
-  ignore_errors: true
+  failed_when: false
 
 - name: Install dependencies
   ansible.builtin.apt:
