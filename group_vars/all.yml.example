@@ -32,6 +32,11 @@ mc_data_dir: /opt/minecraft
 mc_version: "1.21.4"          # or "LATEST"
 mc_type: "PAPER"
 mc_memory: "6G"                # realistic value for ~8 players on 16GB total RAM
+# Container-level memory limit, not the JVM heap (that's mc_memory above).
+# Needs headroom above mc_memory for JVM off-heap usage (metaspace, direct
+# buffers, native libs) - keep ~1G above mc_memory. Total budget check for a
+# 16GB box: OS ~1G + this 7G + mc-backup's 1G leaves ~7G of slack.
+mc_container_mem_limit: "7G"
 mc_difficulty: "easy"
 mc_motd: "§bFamily server – invited friends only! §d<3"
 mc_max_players: 8

@@ -23,6 +23,17 @@ services:
       - KILL
       - SETPCAP
       - SETFCAP
+    # MEMORY below only caps the JVM heap - off-heap usage (metaspace, direct
+    # buffers, native libs) isn't bounded by that, so the container limit
+    # needs headroom above it or a legitimate heap-sized JVM gets OOM-killed.
+    mem_limit: "{{ mc_container_mem_limit }}"
+    mem_reservation: "{{ mc_memory }}"
+    pids_limit: 2048
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     ports:
       - "25565:25565"
 {% if enable_bedrock_support %}
@@ -112,6 +123,15 @@ services:
       - KILL
       - SETPCAP
       - SETFCAP
+    # Compressing a large world folder can spike memory briefly - generous
+    # on purpose, this container just isn't expected to ever need more.
+    mem_limit: "1g"
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     environment:
       BACKUP_INTERVAL: "{{ backup_interval }}"
       PRUNE_BACKUPS_DAYS: "{{ backup_retention_days }}"

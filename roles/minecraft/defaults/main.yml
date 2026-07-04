@@ -3,6 +3,7 @@ mc_data_dir: /opt/minecraft
 mc_version: "LATEST"
 mc_type: "PAPER"
 mc_memory: "4G"
+mc_container_mem_limit: "5G"
 mc_difficulty: "easy"
 mc_motd: "Little Family Minecraft Server"
 mc_max_players: 8
