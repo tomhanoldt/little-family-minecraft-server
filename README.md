@@ -30,6 +30,8 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
   do to join
 - [`docs/account-decision.md`](docs/account-decision.md) - Java vs. Bedrock
   account/license comparison for the other parents
+- [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - setting
+  up app/time limits on iOS and Android
 - [`AGENT.md`](AGENT.md) - operating notes for anyone (human or AI)
   working in this repo
 - [`TODO.md`](TODO.md) - what's still open
