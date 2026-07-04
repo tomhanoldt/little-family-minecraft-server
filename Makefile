@@ -94,6 +94,18 @@ server-check-updates:
 server-check-paper-updates:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags paper_update_check
 
+# Searches chat messages (not full server logs) across plain + rotated/
+# gzipped logs on the mini-PC, e.g.: make chat-grep pattern="some text"
+chat-grep:
+	@if [ -z "$(pattern)" ]; then echo 'Usage: make chat-grep pattern="search text"'; exit 1; fi
+	@docker compose run --rm ansible ssh mono@minecraft-server 'zgrep -h -i "]: <" /opt/minecraft/data/logs/latest.log /opt/minecraft/data/logs/*.log.gz 2>/dev/null' \
+		| grep -i --color=never -- "$(pattern)" || echo "No matches found."
+
+# Shows the last N chat messages from the live log, e.g.: make chat-tail n=50
+# (defaults to 20 if n isn't given)
+chat-tail:
+	@docker compose run --rm ansible ssh mono@minecraft-server 'grep -i "]: <" /opt/minecraft/data/logs/latest.log 2>/dev/null | tail -n $(if $(n),$(n),20)'
+
 # Pulls backups off the mini-PC to ./backups-offbox/ - deliberately no
 # --delete, so this only ever accumulates: if the box's own retention prunes
 # an old backup (or the box is compromised/dies entirely), the copies we've
