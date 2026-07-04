@@ -1,0 +1,101 @@
+# Agent notes
+
+Operating context for any AI agent (or human) working in this repo. See also
+[`docs/`](docs/) for the human-facing writeups this file points into, and
+[`TODO.md`](TODO.md) for what's actually still open.
+
+## What this is
+
+Ansible-managed private Minecraft family server: Paper + Geyser/Floodgate
+(Bedrock crossplay) + a handful of moderation/QoL plugins, reachable only
+via Tailscale, running on a home mini-PC. See `README.md` for the
+user-facing setup guide.
+
+## How to run things
+
+**Everything goes through the dockerized `ansible` service - never install
+Ansible/Python locally.** `docker compose run --rm ansible <cmd>`, or use
+the `Makefile` targets (`make help` lists them all, grouped and commented).
+
+Key ones:
+- `make ansible-syntax-check` / `make ansible-check` / `make ansible-deploy`
+- `make verify-integration` - actually boots the real production
+  `docker-compose.yml.j2` (rendered via `scripts/render_compose.py`)
+  against a throwaway local dir, via Docker Desktop. **Run this before
+  trusting any change to the Minecraft compose template** - it's caught
+  real bugs (broken Modrinth resolution, capability misconfiguration)
+  that pure review missed.
+- `make backup-pull` / `make backup-restore` / `make chat-grep` /
+  `make chat-tail` / `make server-check-updates` /
+  `make server-check-paper-updates`
+
+## Non-negotiable before committing
+
+1. Run the full lint suite and confirm it's clean:
+   `ansible-playbook --syntax-check`, `yamllint -c .yamllint .`,
+   `ansible-lint`, `hadolint < Dockerfile.ansible`.
+2. **Never commit without being explicitly asked**, even after finishing
+   a chunk of work - wait for the user to say so.
+3. Prefer several small, sensibly-grouped commits over one large one when
+   the work has distinct concerns (use `git add -p` to split a single
+   file's diff when the concerns land in the same file).
+
+## Verify claims, don't just read docs
+
+This project's history is full of cases where the documented/expected
+behavior didn't match reality - `sudo-rs` silently breaking Ansible's
+`become`, Geyser/Floodgate's Modrinth listings being wrong or entirely
+unrelated projects, `deploy.resources` limits being silently ignored
+outside Swarm. **When something matters, actually run it** (locally via
+Docker Desktop, or against the real host) rather than trusting a plugin's
+description or a module's docs at face value.
+
+## Ansible role tag conventions
+
+Tasks that shouldn't run during a normal full deploy are tagged so they
+only fire when explicitly requested:
+`tailscale`, `firewall`, `ssh_hardening`, `sudo_nopasswd`, `os_cleanup`,
+`vuln_check`, `system_update`, `paper_update_check`. Destructive ones
+additionally carry the special `never` tag (currently just
+`backup_restore`) - so not even `--tags all` can trigger them by accident.
+
+## Known environment quirks (don't re-discover these)
+
+- **Ubuntu 26.04 on the mini-PC ships `sudo-rs`** (Rust reimplementation)
+  selected by default via `update-alternatives`, which mangles custom
+  prompts and breaks Ansible's `become` entirely. Already switched back to
+  classic `sudo` in `roles/common/tasks/sudo.yml` - don't reintroduce
+  sudo-rs assumptions.
+- **Fresh Ubuntu ISO installs leave a stale
+  `/etc/apt/sources.list.d/cdrom.sources`** with no Release file, which
+  fails `apt-get update` hard. Removed unconditionally via the `always`
+  tag in `roles/common/tasks/main.yml` - keep that task first.
+- **`docker compose` (non-Swarm) silently ignores `deploy.resources.limits`**
+  unless `--compatibility` is passed. Use the plain `mem_limit`/
+  `pids_limit` service-level fields instead (already done in
+  `docker-compose.yml.j2`).
+- **Dependabot cannot parse Jinja templates.** The two production image
+  digests live in `roles/minecraft/templates/docker-compose.yml.j2`, which
+  Dependabot can't read. `.github/dependabot-refs/docker-compose.yml` is a
+  plain, non-functional stand-in purely so Dependabot tracks those two
+  digests - if it opens a PR bumping a digest there, mirror the same
+  `image:tag@sha256` value into the real template and re-verify locally
+  before deploying.
+- **`group_vars/all.yml` (real, gitignored) vs `group_vars/all.yml.example`
+  (tracked template)**: keep them in sync structurally, but never let a
+  real secret leak into the `.example` file.
+- Git history here was deliberately rewritten once already (author
+  identity, stray `Co-Authored-By` trailers) before considering this repo
+  publishable - don't assume the machine's default git config identity is
+  what should go on new commits without checking.
+
+## Docs map
+
+- [`docs/security.md`](docs/security.md) - what we're actually concerned
+  about and what's been done/accepted/left open
+- [`docs/server-hardware.md`](docs/server-hardware.md) - the box itself,
+  memory budget, OS cleanup
+- [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the
+  real bugs found getting them working
+- [`docs/joining.md`](docs/joining.md) - what a new player/family
+  actually needs to do
