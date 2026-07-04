@@ -4,7 +4,7 @@ mc_version: "LATEST"
 mc_type: "PAPER"
 mc_memory: "4G"
 mc_difficulty: "easy"
-mc_motd: "Familien-Minecraft-Server"
+mc_motd: "Little Family Minecraft Server"
 mc_max_players: 8
 mc_view_distance: 8
 mc_whitelist: []
