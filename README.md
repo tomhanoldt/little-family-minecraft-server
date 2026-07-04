@@ -13,10 +13,26 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
 4. **Paper Minecraft server** (Docker image `itzg/minecraft-server`) with:
    - Whitelist + `online-mode` enforced (only real, invited accounts)
    - Geyser + Floodgate (Bedrock/mobile/console compatibility)
-   - EssentialsX, GriefPrevention, CoreProtect, ChatControl (see below)
+   - EssentialsX, GriefPrevention, CoreProtect, ChatFilter (see below)
 5. **Automatic backups** (daily, with rotation) via a second container
    (`itzg/mc-backup`)
 6. Hardens SSH (key-only login) and sets up passwordless sudo for automation
+
+## Documentation
+
+- [`docs/security.md`](docs/security.md) - what we're concerned about and
+  what's been done about it
+- [`docs/server-hardware.md`](docs/server-hardware.md) - the mini-PC itself,
+  memory budget, OS cleanup
+- [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the real
+  bugs found getting them working
+- [`docs/joining.md`](docs/joining.md) - what a new player/family needs to
+  do to join
+- [`docs/account-decision.md`](docs/account-decision.md) - Java vs. Bedrock
+  account/license comparison for the other parents
+- [`AGENT.md`](AGENT.md) - operating notes for anyone (human or AI)
+  working in this repo
+- [`TODO.md`](TODO.md) - what's still open
 
 ## Prerequisites
 
