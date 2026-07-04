@@ -86,7 +86,22 @@ ansible-shell:
 
 ssh-copy-key:
 	@make .print-header msg="copies ~/.ssh/th_rsa.pub to the mini-PC - needs host= and user= (password auth still enabled at this point)"
-	docker compose run --rm ansible ssh-copy-id -o StrictHostKeyChecking=accept-new -i /root/.ssh/th_rsa.pub $(user)@$(host)
+	docker compose run --rm ansible ssh-copy-id -o StrictHostKeyChecking=accept-new -i /home/ansible/.ssh/th_rsa.pub $(user)@$(host)
+
+###############################################################################
+# tailscale (runs on this Mac directly, not in Docker - it's a native daemon)
+###############################################################################
+tailscale-up:
+	tailscale up
+
+tailscale-down:
+	tailscale down
+
+tailscale-status:
+	tailscale status
+
+tailscale-ssh:
+	tailscale ssh mono@little-family-mincraft-server
 
 ###############################################################################
 # hidden tasks

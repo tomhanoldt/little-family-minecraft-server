@@ -1,4 +1,10 @@
 ---
+- name: Remove leftover cdrom apt source (from ISO install, breaks apt-get update)
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/cdrom.sources
+    state: absent
+  tags: always
+
 - name: Update system packages
   ansible.builtin.apt:
     update_cache: true
@@ -10,9 +16,11 @@
 
 - name: Install Tailscale and connect
   ansible.builtin.import_tasks: tailscale.yml
+  tags: tailscale
 
 - name: Configure firewall (tailnet access only)
   ansible.builtin.import_tasks: firewall.yml
+  tags: firewall
 
 - name: Switch SSH to key-only login
   ansible.builtin.import_tasks: ssh_hardening.yml
