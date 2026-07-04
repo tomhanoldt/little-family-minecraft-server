@@ -10,6 +10,18 @@
     update_cache: true
     upgrade: safe
   changed_when: false
+  tags: system_update
+
+- name: Check for pending security updates (dry run, no changes made)
+  ansible.builtin.command: unattended-upgrade --dry-run --debug
+  register: security_update_check
+  changed_when: false
+  tags: vuln_check
+
+- name: Show pending security updates
+  ansible.builtin.debug:
+    msg: "{{ security_update_check.stdout_lines | select('search', 'pkgs that look like they should be upgraded|No packages found|upgrade result') | list }}"
+  tags: vuln_check
 
 - name: Install and configure Docker
   ansible.builtin.import_tasks: docker.yml

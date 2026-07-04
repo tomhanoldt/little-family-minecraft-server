@@ -88,6 +88,12 @@ ssh-copy-key:
 	@make .print-header msg="copies ~/.ssh/th_rsa.pub to the mini-PC - needs host= and user= (password auth still enabled at this point)"
 	docker compose run --rm ansible ssh-copy-id -o StrictHostKeyChecking=accept-new -i /home/ansible/.ssh/th_rsa.pub $(user)@$(host)
 
+server-check-updates:
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags vuln_check
+
+server-update:
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags system_update
+
 ###############################################################################
 # tailscale (runs on this Mac directly, not in Docker - it's a native daemon)
 ###############################################################################
