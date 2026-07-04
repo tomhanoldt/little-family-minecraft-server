@@ -51,11 +51,19 @@ services:
       # Without its own password the image would otherwise fall back to an insecure default.
       ENABLE_RCON: "TRUE"
       RCON_PASSWORD: "{{ mc_rcon_password }}"
+{% if enable_bedrock_support %}
+      # The "floodgate" project on Modrinth is an unrelated Fabric/NeoForge mod -
+      # the real Paper-compatible Floodgate plugin isn't on Modrinth at all, only
+      # on GeyserMC's own download server, so it's fetched directly here instead.
+      PLUGINS: "https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot"
+{% endif %}
       # Auto-load plugins from Modrinth (always current + compatible with the MC version)
+      # Geyser only ever publishes beta-tagged builds on Modrinth, never
+      # "release" - without this, resolution fails outright.
+      MODRINTH_PROJECTS_DEFAULT_VERSION_TYPE: "beta"
       MODRINTH_PROJECTS: |
 {% if enable_bedrock_support %}
         geyser
-        floodgate
 {% endif %}
 {% if enable_essentials %}
         essentialsx
@@ -67,7 +75,7 @@ services:
         griefprevention
 {% endif %}
 {% if enable_chat_filter %}
-        chatcontrol
+        chat_filter
 {% endif %}
 {% if enable_discord_bridge %}
         discordsrv
