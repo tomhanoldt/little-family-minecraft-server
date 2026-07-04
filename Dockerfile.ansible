@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       openssh-client \
@@ -8,9 +8,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --no-cache-dir ansible-core
 
+# Run as a dedicated non-root user - this container only ever talks over SSH
+# to our own mini-PC, no step here needs root. UID matches the host user so
+# the bind-mounted, mode-600 SSH key is readable without needing DAC_OVERRIDE.
+# Membership in the "root" group (not root itself) is Docker Desktop's own
+# documented fix for reading its forwarded ssh-agent socket, which is
+# root:root with group read/write.
+RUN useradd --uid 501 --create-home --shell /bin/bash --groups root ansible
+USER ansible
+
+# Container is ephemeral (no persistent known_hosts across runs) and only ever
+# talks to our own mini-PC on the home LAN - accept-new avoids a host key
+# prompt every single container run without disabling checking entirely.
+RUN mkdir -p /home/ansible/.ssh && printf 'Host *\n  StrictHostKeyChecking accept-new\n' > /home/ansible/.ssh/config
+
 WORKDIR /ansible
 
-COPY requirements.yml .
+COPY --chown=ansible:ansible requirements.yml .
 RUN ansible-galaxy collection install -r requirements.yml
 
 CMD ["bash"]

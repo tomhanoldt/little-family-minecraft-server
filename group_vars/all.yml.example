@@ -62,7 +62,14 @@ enable_bedrock_support: true
 enable_essentials: true          # Homes, spawn protection, basic commands
 enable_anti_grief_claims: true   # GriefPrevention: kids protect their own build area
 enable_coreprotect: true         # Logging + rollback option in case of grief/accidents
-enable_chat_filter: true         # ChatControl: profanity/spam/link filter
+enable_chat_filter: true          # ChatFilter: blocks links/scam-list content + spam
+                                  # (ChatControl was dropped: verified via local test that its
+                                  # free Modrinth build has no release for MC 1.21.4, only up to
+                                  # ~1.20.1, and crash-loops the server if forced. ChatFilter's
+                                  # default config only *registers* its filters without enabling
+                                  # them, so roles/minecraft/files/chatfilter-filter.yml pre-seeds
+                                  # it with the website/IP filter + GamerSafer's moderation list
+                                  # switched on - verified this survives restarts unmodified.)
 enable_discord_bridge: false     # DiscordSRV: mirror chat into a private Discord channel
 discord_webhook_url: ""          # only needed if enable_discord_bridge: true
 
