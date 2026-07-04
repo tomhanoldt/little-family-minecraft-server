@@ -6,6 +6,10 @@
   [`docs/account-decision.md`](docs/account-decision.md).
 - [ ] Set up Microsoft Family accounts for the kids (once the above is
   decided) - see [`docs/joining.md`](docs/joining.md).
+- [ ] Set up device-side app/time limits per
+  [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - note
+  the iOS "All Apps & Categories" + stricter category limit interaction
+  is inconsistently documented, test it on the actual device.
 - [ ] Get everyone's exact in-game usernames and fill in `mc_whitelist`/
   `mc_ops` in `group_vars/all.yml` (Bedrock names need the `.` prefix -
   see [`docs/plugins.md`](docs/plugins.md)).
