@@ -1,0 +1,27 @@
+# All of these are stdlib CVEs found in usr/local/bin/gosu inside the
+# itzg/minecraft-server image (confirmed via `trivy image --format json`,
+# PkgPath usr/local/bin/gosu). gosu (https://github.com/tianon/gosu) is a
+# single-purpose setuid/setgid-then-exec helper the image's entrypoint uses
+# to drop from root to UID 1000 - per its own docs, once it execs the target
+# process "gosu itself is no longer resident or involved... at all", and it
+# never makes network connections, handles TLS, or parses untrusted network
+# input. The vulnerable crypto/tls stdlib code is present only because Go
+# statically links the full stdlib - it is never actually invoked here.
+#
+# Re-verify this reasoning still holds before renewing past the expiry - if
+# gosu's role in the image ever changes, or a newer image build ships a
+# patched gosu, drop these entries instead.
+CVE-2025-68121 exp:2026-10-04
+CVE-2025-61726 exp:2026-10-04
+CVE-2025-61729 exp:2026-10-04
+CVE-2026-25679 exp:2026-10-04
+CVE-2026-27145 exp:2026-10-04
+CVE-2026-32280 exp:2026-10-04
+CVE-2026-32281 exp:2026-10-04
+CVE-2026-32283 exp:2026-10-04
+CVE-2026-33811 exp:2026-10-04
+CVE-2026-33814 exp:2026-10-04
+CVE-2026-39820 exp:2026-10-04
+CVE-2026-39836 exp:2026-10-04
+CVE-2026-42499 exp:2026-10-04
+CVE-2026-42504 exp:2026-10-04
