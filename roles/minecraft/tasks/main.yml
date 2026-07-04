@@ -9,6 +9,21 @@
     - "{{ mc_data_dir }}/data"
     - "{{ mc_data_dir }}/backups"
 
+- name: Create ChatFilter plugin directory
+  ansible.builtin.file:
+    path: "{{ mc_data_dir }}/data/plugins/ChatFilter"
+    state: directory
+    mode: "0755"
+  when: enable_chat_filter | bool
+
+- name: Pre-seed ChatFilter config with malicious-content filters enabled
+  ansible.builtin.copy:
+    src: chatfilter-filter.yml
+    dest: "{{ mc_data_dir }}/data/plugins/ChatFilter/filter.yml"
+    mode: "0644"
+    force: false
+  when: enable_chat_filter | bool
+
 - name: Generate docker-compose.yml from template
   ansible.builtin.template:
     src: docker-compose.yml.j2

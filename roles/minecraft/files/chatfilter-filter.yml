@@ -1,0 +1,89 @@
+# This filter uses regex to match messages and will not work if you set up your expressions correctly
+# PATTERNS ARE CASE SENSITIVE, design your regex accordingly
+
+# Resources:
+# https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Cheatsheet
+# https://regex101.com/
+
+
+# Action tag allowed arguments:
+# 'notify' - notify user as specified in config.yml under notify
+# (only put one of the below per category)
+# 'cancel' - cancel the message
+# 'ghost' - return message to sender but hide message from other players
+# 'ignore' - does not cancel or modify the message, but still runs the commands
+
+
+# Placeholders for commands (case-sensitive)
+# %PLAYER%     - offending player's username
+# %UUID%       - offending player's UUID
+# %MESSAGE%    - message that triggered the violation
+# %PATTERN%    - pattern that matched the offending text
+# %CATEGORY% - filter category that got triggered
+# %WORLD%      - world that offending player was in
+# %IP%         - player's IP address, useful for auto IP BANS
+
+
+# You must add the category to the list in config.yml to enable
+categories:
+  # Name of category
+  example:
+    # Whether this category is enabled by default
+    enabled: false
+    # Action to be taken when violation occurs
+    action:
+      - 'cancel'
+      - 'notify'
+    # These commands are executed as console when a player triggers the filter
+    commands:
+      - '/ban %PLAYER%'
+    # Regex patterns for the filter to match
+    regex:
+      - 'pattern-1'
+      - 'pattern-2'
+      - 'pattern-3'
+
+  # You can add unlimited categories
+  # This is an example category to block websites in chat
+  demo-websites:
+    enabled: true
+    action:
+      - 'cancel'
+    commands:
+      - '/chatfilter mute %PLAYER% 5m Chat Filter'
+    regex:
+      - 'https?://'
+      - '[\w\d-]+\.(net|com|org)'
+      - '[\d]+\.[\d]+\.[\d]+\.[\d]+'
+
+  demo-all_caps:
+    enabled: false
+    action:
+      - 'cancel'
+    commands:
+      - '/chatfilter mute %PLAYER% 1h Chat Filter'
+    regex:
+      - '^[A-Z\s]+$'
+
+
+  # The GamerSafer Regex list cannot be modified as it uses GamerSafer's official list
+  # If there are ever issues with this filter, please make an issue on ChatFilter's GitHub Page
+  gamersafer:
+    enabled: true
+    action:
+      - 'cancel'
+      - 'notify'
+    commands:
+      '/mute %PLAYER% 1h'
+    # How strict should the filter be?
+    # 0 : exact match, case-insensitive
+    # 1 : matches extra letters, case-insensitive
+    # 2 : matches whitespace, extra letters, case-insensitive
+    strictness: 1
+    # For words that have too many false-positives
+    exclude:
+      - 'cok'
+      - 'iap'
+      - 'sm'
+      - 'ho'
+      - 'hell'
