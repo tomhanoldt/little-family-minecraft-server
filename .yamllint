@@ -1,0 +1,27 @@
+---
+extends: default
+
+rules:
+  # Long inline comments (aligned trailing comments, URLs) are more readable
+  # than wrapped lines here - 150 still catches genuinely runaway lines.
+  line-length:
+    max: 150
+  # Compose/Dependabot files conventionally skip "---"; not worth enforcing
+  # consistently across file types just for this.
+  document-start: disable
+  # Multi-line comments here deliberately continue a prior inline comment's
+  # visual column rather than matching code indentation.
+  comments-indentation: disable
+  # ansible-lint requires these specific values to treat this file as a
+  # compatible yamllint config for its own embedded checks.
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  # GitHub Actions requires the literal key "on:", which YAML 1.1 treats as
+  # a boolean - only check values, not keys, to avoid that false positive.
+  truthy:
+    check-keys: false

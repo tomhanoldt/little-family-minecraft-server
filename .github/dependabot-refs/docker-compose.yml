@@ -1,0 +1,13 @@
+# NOT used to run anything - Dependabot's docker-compose ecosystem can't parse
+# Jinja templates, so the real file (roles/minecraft/templates/docker-compose.yml.j2)
+# is invisible to it. This is a plain stand-in purely so Dependabot tracks these
+# two pinned images and opens PRs when new digests are published.
+#
+# When Dependabot bumps a digest here, manually mirror the same image:tag@sha256
+# value into roles/minecraft/templates/docker-compose.yml.j2, then re-verify
+# locally (see README) before deploying.
+services:
+  mc:
+    image: itzg/minecraft-server:java21@sha256:43685ce3678cd9623b55004a477398caa144d2d4c574f69a2eca15a6da5ea405
+  mc-backup:
+    image: itzg/mc-backup:2026.6.2@sha256:324971bd9b77867c5ee8ca510d071e63b96402995c0fb027b270e72f893140db

@@ -1,0 +1,64 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - run: docker compose build ansible
+      - run: docker compose run --rm ansible ansible-playbook playbook.yml --syntax-check
+
+  integration:
+    runs-on: ubuntu-latest
+    # This is the only workflow that actually pulls and runs the real
+    # itzg/minecraft-server + itzg/mc-backup images end to end (against a
+    # throwaway data dir, never the real mini-PC) - it's what catches things
+    # like broken Modrinth plugin resolution before they'd hit production.
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Render production docker-compose.yml.j2 with test values
+        run: |
+          mkdir -p /tmp/mc-test/data /tmp/mc-test/backups
+          python3 scripts/render_compose.py /tmp/mc-test /tmp/mc-test/docker-compose.yml
+      - name: Start the real Minecraft stack against a throwaway data dir
+        working-directory: /tmp/mc-test
+        run: docker compose up -d
+      - name: Wait for the server to become healthy
+        working-directory: /tmp/mc-test
+        run: |
+          for i in $(seq 1 60); do
+            status=$(docker inspect minecraft --format '{{.State.Health.Status}}' 2>/dev/null || echo "starting")
+            state=$(docker inspect minecraft --format '{{.State.Status}}' 2>/dev/null || echo "unknown")
+            if [ "$status" = "healthy" ]; then
+              echo "Server is healthy."
+              exit 0
+            fi
+            if [ "$state" = "restarting" ] || [ "$state" = "exited" ]; then
+              echo "Container crashed/restarting - failing fast."
+              docker logs minecraft || true
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for healthy status."
+          docker logs minecraft || true
+          exit 1
+      - name: Show logs on failure
+        if: failure()
+        working-directory: /tmp/mc-test
+        run: docker compose logs
+      - name: Tear down
+        if: always()
+        working-directory: /tmp/mc-test
+        run: docker compose down -v

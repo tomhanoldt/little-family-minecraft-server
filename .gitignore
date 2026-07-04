@@ -3,3 +3,4 @@ group_vars/all.yml
 .DS_Store
 __pycache__/
 .claude/settings.local.json
+.ci-test-scratch/

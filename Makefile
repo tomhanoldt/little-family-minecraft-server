@@ -91,6 +91,27 @@ ssh-copy-key:
 server-check-updates:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags vuln_check
 
+# Spins up the real itzg images against a throwaway local data dir (never the
+# real mini-PC) to catch broken plugin resolution etc. before deploying -
+# same check CI runs on every push.
+verify-integration:
+	@make .print-header msg="rendering compose file + booting the real Minecraft stack against a throwaway dir"
+	@mkdir -p .ci-test-scratch/data .ci-test-scratch/backups
+	docker compose run --rm -v $(PWD)/.ci-test-scratch:/ci-test ansible python3 scripts/render_compose.py $(PWD)/.ci-test-scratch /ci-test/docker-compose.yml
+	cd .ci-test-scratch && docker compose up -d
+	@echo "Waiting for the server to become healthy (this can take ~1-2 minutes)..."
+	@cd .ci-test-scratch && for i in $$(seq 1 60); do \
+		status=$$(docker inspect minecraft --format '{{.State.Health.Status}}' 2>/dev/null || echo starting); \
+		state=$$(docker inspect minecraft --format '{{.State.Status}}' 2>/dev/null || echo unknown); \
+		if [ "$$status" = "healthy" ]; then echo "Healthy."; exit 0; fi; \
+		if [ "$$state" = "restarting" ] || [ "$$state" = "exited" ]; then echo "Crashed:"; docker logs minecraft; exit 1; fi; \
+		sleep 5; \
+	done; echo "Timed out."; docker logs minecraft; exit 1
+
+verify-integration-clean:
+	cd .ci-test-scratch && docker compose down -v
+	rm -rf .ci-test-scratch
+
 server-update:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags system_update
 

@@ -1,0 +1,8 @@
+---
+# var-naming[no-role-prefix] wants every variable renamed with a role prefix
+# (mc_version -> minecraft_version, etc.). With only two roles and no actual
+# naming collisions, that's a repo-wide rename for a purely cosmetic
+# namespacing concern - not worth the churn or the re-verification effort
+# for a project this size.
+skip_list:
+  - var-naming[no-role-prefix]
