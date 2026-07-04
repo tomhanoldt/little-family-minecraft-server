@@ -1,0 +1,84 @@
+---
+# =============================================================
+# GENERAL
+# =============================================================
+timezone: "Europe/Berlin"
+
+# =============================================================
+# TAILSCALE
+# =============================================================
+# Generate an auth key at: https://login.tailscale.com/admin/settings/keys
+# (best as "reusable" + "ephemeral: false", optionally tagged)
+tailscale_authkey: "tskey-auth-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX"
+tailscale_hostname: "minecraft-server"
+# If already manually connected to Tailscale, you can leave tailscale_authkey
+# empty ("") - the role will then just check that tailscale is running.
+
+# =============================================================
+# FIREWALL
+# =============================================================
+# Tailscale always uses the CGNAT range 100.64.0.0/10 internally.
+# This means the Minecraft port is ONLY reachable from the tailnet,
+# never from the regular internet or even the home network (unless desired).
+allowed_source_cidr: "100.64.0.0/10"
+# If your child should also be able to play from the home WiFi (without Tailscale),
+# add your LAN subnet here too, e.g. "192.168.1.0/24"
+additional_allowed_cidrs: []
+
+# =============================================================
+# MINECRAFT SERVER
+# =============================================================
+mc_data_dir: /opt/minecraft
+mc_version: "1.21.4"          # or "LATEST"
+mc_type: "PAPER"
+mc_memory: "6G"                # realistic value for ~8 players on 16GB total RAM
+mc_difficulty: "easy"
+mc_motd: "§bFamily server – invited friends only! §d<3"
+mc_max_players: 8
+mc_view_distance: 8
+
+# Whitelist is a MANDATORY part of this setup (no public access).
+# Enter the Minecraft names of your daughter + her friends.
+# UUID can stay empty - the itzg image resolves the name automatically on startup.
+mc_whitelist:
+  - name: "DaughterMCName"
+  - name: "FriendMCName1"
+  - name: "FriendMCName2"
+
+# Who gets admin commands (e.g. /gamemode, /tp)? Usually just your daughter or yourself.
+mc_ops:
+  - "DaughterMCName"
+
+# =============================================================
+# BEDROCK / DEVICE COMPATIBILITY
+# =============================================================
+# As long as it's unclear which devices the friends will play on,
+# leave this on - costs almost no performance, but makes every device compatible.
+enable_bedrock_support: true
+
+# =============================================================
+# SAFETY / MODERATION - feel free to toggle these on/off
+# =============================================================
+enable_essentials: true          # Homes, spawn protection, basic commands
+enable_anti_grief_claims: true   # GriefPrevention: kids protect their own build area
+enable_coreprotect: true         # Logging + rollback option in case of grief/accidents
+enable_chat_filter: true         # ChatControl: profanity/spam/link filter
+enable_discord_bridge: false     # DiscordSRV: mirror chat into a private Discord channel
+discord_webhook_url: ""          # only needed if enable_discord_bridge: true
+
+# Limit play times (optional). If enabled, a cronjob starts/stops
+# the server automatically only within this time window.
+enable_playtime_schedule: false
+playtime_start_cron: "0 14 * * *"   # start daily at 14:00
+playtime_stop_cron:  "0 19 * * *"   # stop daily at 19:00
+
+# =============================================================
+# BACKUP
+# =============================================================
+enable_backup: true
+backup_interval: "24h"
+backup_retention_days: 7
+# Password mc-backup uses over RCON to run "save-off/save-all" before each backup.
+# Freely chosen/generated, doesn't need to be known anywhere else -
+# don't confuse this with real Minecraft account passwords.
+mc_rcon_password: "CHANGE_ME_generate_a_random_string"

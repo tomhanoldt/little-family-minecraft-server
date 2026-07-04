@@ -1,0 +1,19 @@
+---
+- name: Check for classic sudo binary (Ubuntu ships both alongside sudo-rs)
+  ansible.builtin.stat:
+    path: /usr/bin/sudo.ws
+  register: classic_sudo_binary
+
+- name: Switch from sudo-rs to classic sudo (sudo-rs mangles custom prompts and breaks Ansible's become)
+  community.general.alternatives:
+    name: sudo
+    path: /usr/bin/sudo.ws
+  when: classic_sudo_binary.stat.exists
+
+- name: Allow passwordless sudo for the SSH/ansible user
+  community.general.sudoers:
+    name: "{{ ansible_user }}-nopasswd"
+    state: present
+    user: "{{ ansible_user }}"
+    commands: ALL
+    nopassword: true

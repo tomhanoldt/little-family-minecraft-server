@@ -1,0 +1,11 @@
+---
+- name: Disable SSH password login (key-based only)
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/99-disable-password-auth.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload SSH service

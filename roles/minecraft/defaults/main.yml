@@ -1,0 +1,21 @@
+---
+mc_data_dir: /opt/minecraft
+mc_version: "LATEST"
+mc_type: "PAPER"
+mc_memory: "4G"
+mc_difficulty: "easy"
+mc_motd: "Familien-Minecraft-Server"
+mc_max_players: 8
+mc_view_distance: 8
+mc_whitelist: []
+mc_ops: []
+enable_bedrock_support: true
+enable_essentials: true
+enable_anti_grief_claims: true
+enable_coreprotect: true
+enable_chat_filter: true
+enable_discord_bridge: false
+enable_backup: true
+backup_interval: "24h"
+backup_retention_days: 7
+enable_playtime_schedule: false

@@ -1,0 +1,23 @@
+---
+- name: Update system packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: safe
+  changed_when: false
+
+- name: Install and configure Docker
+  ansible.builtin.import_tasks: docker.yml
+
+- name: Install Tailscale and connect
+  ansible.builtin.import_tasks: tailscale.yml
+
+- name: Configure firewall (tailnet access only)
+  ansible.builtin.import_tasks: firewall.yml
+
+- name: Switch SSH to key-only login
+  ansible.builtin.import_tasks: ssh_hardening.yml
+  tags: ssh_hardening
+
+- name: Set up passwordless sudo for the SSH user
+  ansible.builtin.import_tasks: sudo.yml
+  tags: sudo_nopasswd

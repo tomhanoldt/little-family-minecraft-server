@@ -1,0 +1,49 @@
+---
+- name: Allow SSH generally (so you don't lock yourself out)
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Allow Minecraft Java port only from the Tailscale network
+  community.general.ufw:
+    rule: allow
+    port: "25565"
+    proto: tcp
+    src: "{{ allowed_source_cidr }}"
+
+- name: Allow Minecraft Bedrock port (Geyser) only from the Tailscale network
+  community.general.ufw:
+    rule: allow
+    port: "19132"
+    proto: udp
+    src: "{{ allowed_source_cidr }}"
+  when: enable_bedrock_support | bool
+
+- name: Additional allowed networks (e.g. home WiFi) for the Java port
+  community.general.ufw:
+    rule: allow
+    port: "25565"
+    proto: tcp
+    src: "{{ item }}"
+  loop: "{{ additional_allowed_cidrs }}"
+
+- name: Additional allowed networks for the Bedrock port
+  community.general.ufw:
+    rule: allow
+    port: "19132"
+    proto: udp
+    src: "{{ item }}"
+  loop: "{{ additional_allowed_cidrs }}"
+  when: enable_bedrock_support | bool
+
+- name: Default policy - deny incoming, allow outgoing
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Allow UFW outgoing
+  community.general.ufw:
+    policy: allow
+    direction: outgoing

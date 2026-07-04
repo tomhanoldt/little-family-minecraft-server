@@ -1,0 +1,59 @@
+---
+- name: Remove old Docker packages (if present)
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - podman-docker
+      - containerd
+      - runc
+    state: absent
+  ignore_errors: true
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - ufw
+    state: present
+    update_cache: true
+
+- name: Add Docker apt repository (incl. GPG key)
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ ansible_distribution_release }}"
+    components: stable
+    # ansible_architecture returns uname-style names (x86_64/aarch64), but apt
+    # needs Debian arch names (amd64/arm64) - so translate here.
+    architectures: >-
+      {{ {'x86_64': 'amd64', 'aarch64': 'arm64'}.get(ansible_architecture, ansible_architecture) }}
+    signed_by: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Install Docker Engine + Compose plugin
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Add current user to the docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: Enable Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

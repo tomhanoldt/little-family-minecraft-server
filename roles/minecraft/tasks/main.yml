@@ -1,0 +1,47 @@
+---
+- name: Create data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ mc_data_dir }}"
+    - "{{ mc_data_dir }}/data"
+    - "{{ mc_data_dir }}/backups"
+
+- name: Generate docker-compose.yml from template
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ mc_data_dir }}/docker-compose.yml"
+    mode: "0644"
+  register: compose_file
+
+- name: Start/update Minecraft server (+ backup sidecar)
+  community.docker.docker_compose_v2:
+    project_src: "{{ mc_data_dir }}"
+    state: present
+    pull: "always"
+
+- name: Cronjob for automatic start (playtime schedule)
+  ansible.builtin.cron:
+    name: "minecraft-server-start"
+    job: "cd {{ mc_data_dir }} && /usr/bin/docker compose start mc"
+    minute: "{{ playtime_start_cron.split(' ')[0] }}"
+    hour: "{{ playtime_start_cron.split(' ')[1] }}"
+  when: enable_playtime_schedule | bool
+
+- name: Cronjob for automatic stop (playtime schedule)
+  ansible.builtin.cron:
+    name: "minecraft-server-stop"
+    job: "cd {{ mc_data_dir }} && /usr/bin/docker compose stop mc"
+    minute: "{{ playtime_stop_cron.split(' ')[0] }}"
+    hour: "{{ playtime_stop_cron.split(' ')[1] }}"
+  when: enable_playtime_schedule | bool
+
+- name: Note about DiscordSRV
+  ansible.builtin.debug:
+    msg: >-
+      DiscordSRV is installed but still needs manual configuration:
+      enter the bot token/webhook in {{ mc_data_dir }}/data/plugins/DiscordSRV/config.yml,
+      then 'docker compose restart mc'.
+  when: enable_discord_bridge | bool

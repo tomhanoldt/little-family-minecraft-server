@@ -1,0 +1,9 @@
+---
+- name: Set up Minecraft family server
+  hosts: minecraft
+  become: true
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - common
+    - minecraft

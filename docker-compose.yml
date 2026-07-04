@@ -1,0 +1,17 @@
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: Dockerfile.ansible
+    working_dir: /ansible
+    volumes:
+      - .:/ansible
+      - ${HOME}/.ssh/th_rsa:/root/.ssh/th_rsa:ro
+      - ${HOME}/.ssh/th_rsa.pub:/root/.ssh/th_rsa.pub:ro
+      # Docker Desktop's forwarded host ssh-agent socket - lets the container
+      # ask the host agent to sign with th_rsa instead of needing its passphrase
+      # inside the (non-interactive) container.
+      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+    environment:
+      - ANSIBLE_CONFIG=/ansible/ansible.cfg
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
