@@ -14,13 +14,14 @@
   `mc_ops` in `group_vars/all.yml` (Bedrock names need the `.` prefix -
   see [`docs/plugins.md`](docs/plugins.md)). Java names are pre-resolved
   automatically on deploy; Bedrock names need the post-connect
-  `/fwhitelist`/`/op` procedure documented there.
+  `/fwhitelist`/`/op` procedure documented there. Admin, spouse, and one
+  child are whitelisted so far (all Bedrock names needed the post-connect
+  procedure - none matched the Gamertag first assumed, see
+  [`docs/plugins.md`](docs/plugins.md#the-general-sanitization-pattern-confirmed-from-two-real-cases)).
 - [x] ~~Run the actual first deployment~~ - **done**: Docker, Tailscale,
   firewall, SSH hardening, and the Minecraft stack are live on the
-  mini-PC. The admin's own Java and Bedrock accounts are the only
-  whitelist/ops entries so far - see below on a real gotcha where the
-  Bedrock entry didn't end up being the name first assumed.
-- [ ] Add the kids'/friends' real usernames once known (see above).
+  mini-PC.
+- [ ] Add remaining kids'/friends' real usernames once known (see above).
 - [ ] Disable Tailscale key expiry for the `little-family-mincraft-server`
   device in the admin console (matching the other devices) - mentioned
   early on, never confirmed done.

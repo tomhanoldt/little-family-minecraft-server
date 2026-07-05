@@ -10,7 +10,13 @@ timezone: "Europe/Berlin"
 # Generate an auth key at: https://login.tailscale.com/admin/settings/keys
 # (best as "reusable" + "ephemeral: false", optionally tagged)
 tailscale_authkey: "tskey-auth-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX"
-tailscale_hostname: "little-family-mincraft-server"
+tailscale_hostname: "little-family-mincraft-server" # yes, "mincraft" -
+                    # missing the middle "e" - a real typo baked into the
+                    # actual deployed Tailscale device name already, not a
+                    # typo in this file. Renaming it would change the
+                    # device's DNS name (little-family-mincraft-server.<tailnet>.ts.net)
+                    # that's already shared with/used by other players, so
+                    # it's been left as-is rather than "fixed".
 # If already manually connected to Tailscale, you can leave tailscale_authkey
 # empty ("") - the role will then just check that tailscale is running.
 

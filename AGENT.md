@@ -124,6 +124,11 @@ additionally carry the special `never` tag (currently just
   where an empty file left by Paper itself means `force: false` never
   actually writes anything, forever. Check whether "already exists"
   really means "already has real content" before reusing this pattern.
+- **`tailscale_hostname: "little-family-mincraft-server"` is spelled with
+  "mincraft" (missing the "e") on purpose, not a typo to fix** - it's the
+  real, already-deployed Tailscale device name/DNS entry, shared with and
+  used by other players already. "Correcting" it would rename the actual
+  device and break everyone's saved server address.
 
 ## Docs map
 
