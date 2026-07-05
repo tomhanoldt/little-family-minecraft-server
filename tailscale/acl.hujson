@@ -1,0 +1,76 @@
+// Reference copy of this tailnet's ACL policy - documentation of intent,
+// NOT a live source of truth. Tailscale ACLs are managed via the admin
+// console (https://login.tailscale.com/admin/acls), not by Ansible - if
+// you change this file, you still have to paste the change into the
+// console yourself. Keep this in sync by hand after doing so.
+//
+// See docs/security.md#network-exposure for the reasoning, and a real
+// gotcha: tagging a device removes it from "autogroup:member" entirely,
+// so any broad autogroup:member grant silently stops applying to it -
+// each tag needs its own explicit grant for everything it should still
+// reach, not just whatever new restriction was being added.
+{
+    "tagOwners": {
+        "tag:home-assistant": ["autogroup:admin"],
+        "tag:minecraft":      ["autogroup:admin"],
+        "tag:kid-restricted": ["autogroup:admin"],
+        "tag:tom-personal":   ["autogroup:admin"],
+    },
+
+    "grants": [
+        // Only the admin's own devices (phone, laptop) trust each other
+        // fully - was "autogroup:member" to "autogroup:member", which gave
+        // every tailnet member (spouse, kids, any Device-Shared friends)
+        // full access to every other member's device.
+        {"src": ["tag:tom-personal"], "dst": ["tag:tom-personal"], "ip": ["*"]},
+
+        // Home Assistant: open to any plain (untagged) member - e.g. a
+        // spouse who doesn't need the Minecraft-only restriction.
+        {
+            "src": ["autogroup:member"],
+            "dst": ["tag:home-assistant"],
+            "ip":  ["*"],
+        },
+        // Admin's own devices need this explicitly too, since tagging them
+        // above removed them from autogroup:member.
+        {"src": ["tag:tom-personal"], "dst": ["tag:home-assistant"], "ip": ["*"]},
+
+        // Minecraft: open to any plain member (spouse, Device-Shared
+        // friends).
+        {
+            "src": ["autogroup:member"],
+            "dst": ["tag:minecraft"],
+            "ip":  ["tcp:25565", "udp:19132"],
+        },
+        // Admin's own devices, same reason as the Home Assistant grant above.
+        {"src": ["tag:tom-personal"], "dst": ["tag:minecraft"], "ip": ["tcp:25565", "udp:19132"]},
+
+        // A kid's device, added under the admin's own account rather than
+        // a separate Device-Shared identity - restricted to Minecraft only.
+        {
+            "src": ["tag:kid-restricted"],
+            "dst": ["tag:minecraft"],
+            "ip":  ["tcp:25565", "udp:19132"],
+        },
+
+        // Admin-only SSH network reachability into the Minecraft box
+        // (matches the "ssh" stanza below, which handles auth - this
+        // handles the underlying network path).
+        {"src": ["autogroup:admin"], "dst": ["tag:minecraft"], "ip": ["tcp:22"]},
+    ],
+
+    "ssh": [
+        {
+            "action": "check",
+            "src":    ["autogroup:member"],
+            "dst":    ["autogroup:self"],
+            "users":  ["autogroup:nonroot", "root"],
+        },
+        {
+            "action": "check",
+            "src":    ["autogroup:admin"],
+            "dst":    ["tag:minecraft"],
+            "users":  ["autogroup:nonroot", "root"],
+        },
+    ],
+}

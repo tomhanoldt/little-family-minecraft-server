@@ -19,6 +19,22 @@ home network or the kids' safety," not "withstand nation-state attackers."
   members can only reach it on the game ports, and it has no grant to reach
   anything else on the tailnet - if it's ever compromised, it can't pivot
   sideways into the rest of the home network.
+- Per-person access is tagged too, not just left as one broad "any tailnet
+  member" grant: the admin's own devices (`tag:tom-personal`) keep full
+  mutual access to each other plus Home Assistant; a kid's device
+  (`tag:kid-restricted`) gets *only* the Minecraft ports and nothing else,
+  even though it's added under the admin's own Tailscale account rather
+  than a separate Device-Shared identity. A real gotcha hit while setting
+  this up: tagging a device removes it from `autogroup:member` entirely -
+  any broad `autogroup:member`-based grant (e.g. "members reach each
+  other's devices," or Minecraft access itself) silently stops applying to
+  a device the moment it's tagged, so each tag needs its own **explicit**
+  grant for everything it should still be able to reach, not just the new
+  restriction being added. A reference copy of the current policy lives at
+  [`tailscale/acl.hujson`](../tailscale/acl.hujson) - it has to be applied
+  manually via the Tailscale admin console (ACLs aren't Ansible-managed),
+  so treat that file as documentation of intent, not a live source of truth
+  - check the admin console for what's actually applied.
 - RCON (used internally by `mc-backup` to coordinate backups) is never
   published to any network interface - it only exists on Docker's internal
   bridge network between `mc` and `mc-backup`. It's also given a real,
