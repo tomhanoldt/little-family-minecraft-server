@@ -88,10 +88,15 @@ services:
       # Auto-load plugins from Modrinth (always current + compatible with the MC version)
       # Geyser only ever publishes beta-tagged builds on Modrinth, never
       # "release" - without this, resolution fails outright.
+      # ViaVersion: Geyser is always fetched at latest and now speaks a newer
+      # Java protocol (26.x) than this deliberately-pinned server (1.21.4 -
+      # CoreProtect/ChatFilter have no 26.x build yet - see docs/plugins.md).
+      # ViaVersion bridges that gap without bumping the server version.
       MODRINTH_PROJECTS_DEFAULT_VERSION_TYPE: "beta"
       MODRINTH_PROJECTS: |
 {% if enable_bedrock_support %}
         geyser
+        viaversion
 {% endif %}
 {% if enable_essentials %}
         essentialsx

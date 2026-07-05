@@ -8,6 +8,7 @@ plugin descriptions).
 |---|---|---|
 | **Geyser** | Lets Bedrock Edition clients (phone/tablet/console/Windows) connect to this Java server at all | `enable_bedrock_support` |
 | **Floodgate** | Lets those Bedrock players join *without* needing a separate Java Edition account | `enable_bedrock_support` |
+| **ViaVersion** | Lets this (deliberately older-pinned) server accept the newer Java protocol Geyser now speaks | `enable_bedrock_support` |
 | **EssentialsX** | `/home`, `/spawn`, `/tpa`, basic quality-of-life commands | `enable_essentials` |
 | **GriefPrevention** | Kids claim their own build area with a golden shovel; nobody else can build/break inside a claim they don't own | `enable_anti_grief_claims` |
 | **CoreProtect** | Logs every world action; `/co rollback` undoes grief or accidents | `enable_coreprotect` |
@@ -42,6 +43,23 @@ These were all found by actually booting the real containers locally
   before first boot, so it's actually active from the start. Verified this
   survives container restarts unmodified (the plugin only writes its
   defaults when no config exists yet).
+- **Mojang changed Minecraft's own versioning scheme in 2026** - after
+  `1.21.11` the next releases are `26.1`/`26.2` (year-based, like several
+  other software projects have adopted). Geyser is fetched at `latest` on
+  every deploy (no version pin), so it started speaking this newer
+  protocol while our server stays deliberately pinned at `1.21.4` - which
+  showed up as a real, live incident: Bedrock clients got "server needs
+  an update or install ViaVersion" and couldn't connect at all, even
+  though the server itself was healthy. Checked before just bumping the
+  version: **CoreProtect and ChatFilter have no build at all for `26.x`
+  yet** (verified against Modrinth's API directly) - bumping `mc_version`
+  would have silently dropped grief-rollback and chat moderation, the two
+  safety features that matter most here. Installed **ViaVersion** instead
+  (verified via Modrinth: one build spans `1.8.9` through `26.2`, tagged
+  `beta` like Geyser) - it lets the still-`1.21.4` server accept the
+  newer protocol Geyser now uses, without touching the actual server
+  version or plugin compatibility. Revisit a real version bump once
+  CoreProtect/ChatFilter ship `26.x`-compatible builds.
 
 ## Whitelisting Bedrock/Floodgate players
 

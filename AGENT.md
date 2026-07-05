@@ -116,6 +116,8 @@ additionally carry the special `never` tag (currently just
   memory budget, OS cleanup
 - [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the
   real bugs found getting them working
+- [`docs/installing-minecraft.md`](docs/installing-minecraft.md) - getting
+  the client itself installed per device (iOS/Android/Windows/Mac)
 - [`docs/joining.md`](docs/joining.md) - what a new player/family
   actually needs to do
 - [`docs/account-decision.md`](docs/account-decision.md) - Java vs.

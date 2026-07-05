@@ -29,6 +29,8 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
   memory budget, OS cleanup
 - [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the real
   bugs found getting them working
+- [`docs/installing-minecraft.md`](docs/installing-minecraft.md) - getting
+  the app itself onto a phone, tablet, or laptop
 - [`docs/joining.md`](docs/joining.md) - what a new player/family needs to
   do to join
 - [`docs/account-decision.md`](docs/account-decision.md) - Java vs. Bedrock

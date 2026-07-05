@@ -7,6 +7,11 @@ Before joining, parents may want to read
 [`privacy.md`](privacy.md) - what's logged (chat, world actions via
 CoreProtect), who can see it, and how that data is protected.
 
+For actually getting the app onto a phone/tablet/laptop, see
+[`installing-minecraft.md`](installing-minecraft.md) - this page covers
+accounts, whitelist, and Tailscale, assuming the app is already
+installed.
+
 ## What you need
 
 ### A Minecraft account
