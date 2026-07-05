@@ -15,7 +15,6 @@ enable_essentials: true
 enable_anti_grief_claims: true
 enable_coreprotect: true
 enable_chat_filter: true
-enable_discord_bridge: false
 enable_backup: true
 backup_interval: "24h"
 backup_retention_days: 7

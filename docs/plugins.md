@@ -12,7 +12,6 @@ plugin descriptions).
 | **GriefPrevention** | Kids claim their own build area with a golden shovel; nobody else can build/break inside a claim they don't own | `enable_anti_grief_claims` |
 | **CoreProtect** | Logs every world action; `/co rollback` undoes grief or accidents | `enable_coreprotect` |
 | **ChatFilter** | Blocks links/IP addresses and known-bad content in chat | `enable_chat_filter` |
-| **DiscordSRV** | Mirrors chat to a private Discord channel | `enable_discord_bridge` (off - not used, explicit choice) |
 
 All installed automatically from Modrinth (or directly from GeyserMC's own
 download server for Floodgate - see below), matching the pinned Minecraft

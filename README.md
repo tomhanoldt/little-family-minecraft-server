@@ -145,13 +145,6 @@ Set `enable_playtime_schedule: true` and enter start/stop times in
 `group_vars/all.yml` - a cronjob then automatically starts/stops the server
 container only within the desired time window.
 
-## Optional: mirror chat to Discord
-
-`enable_discord_bridge: true` also installs DiscordSRV. After the first
-start you need to fill `data/plugins/DiscordSRV/config.yml` once with a
-bot token/webhook and restart the container - then the entire Minecraft
-chat runs into a private Discord channel that only you see.
-
 ## Maintenance
 
 ```bash

@@ -81,9 +81,6 @@ enable_chat_filter: true          # ChatFilter: blocks links/scam-list content +
                                   # them, so roles/minecraft/files/chatfilter-filter.yml pre-seeds
                                   # it with the website/IP filter + GamerSafer's moderation list
                                   # switched on - verified this survives restarts unmodified.)
-enable_discord_bridge: false     # DiscordSRV: mirror chat into a private Discord channel
-discord_webhook_url: ""          # only needed if enable_discord_bridge: true
-
 # Limit play times (optional). If enabled, a cronjob starts/stops
 # the server automatically only within this time window.
 enable_playtime_schedule: false

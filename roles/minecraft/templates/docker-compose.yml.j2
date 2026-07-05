@@ -105,9 +105,6 @@ services:
 {% if enable_chat_filter %}
         chat_filter
 {% endif %}
-{% if enable_discord_bridge %}
-        discordsrv
-{% endif %}
       # Only auto-select based on plugins when no version is pinned -
       # otherwise VERSION_FROM_MODRINTH_PROJECTS would override the manually set mc_version.
       VERSION_FROM_MODRINTH_PROJECTS: "{{ 'true' if mc_version | upper == 'LATEST' else 'false' }}"

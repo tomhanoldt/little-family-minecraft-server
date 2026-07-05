@@ -108,11 +108,3 @@
   tags:
     - never
     - backup_restore
-
-- name: Note about DiscordSRV
-  ansible.builtin.debug:
-    msg: >-
-      DiscordSRV is installed but still needs manual configuration:
-      enter the bot token/webhook in {{ mc_data_dir }}/data/plugins/DiscordSRV/config.yml,
-      then 'docker compose restart mc'.
-  when: enable_discord_bridge | bool
