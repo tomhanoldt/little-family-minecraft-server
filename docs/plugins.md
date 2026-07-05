@@ -128,6 +128,35 @@ taken by someone else. Two things worth knowing:
   so it cannot match an existing whitelist/ops entry for someone else's
   account, suffix or not.
 
+### The general sanitization pattern (confirmed from two real cases)
+
+Minecraft usernames only allow `[A-Za-z0-9_]`, so Geyser sanitizes
+whatever the real Xbox Gamertag contains down to that set - confirmed
+from two different real accounts connecting, not just one:
+
+- `#` (the "modern Gamertag" discriminator, e.g. `name#1234`) is
+  **stripped**, not replaced - a real `name#1234` connected as `name1234`.
+- A **space** (an older "Classic Gamertag" made of two words, e.g.
+  `name 1234`) is **replaced with an underscore** - a real `name 1234`
+  connected as `name_1234`. Note this is a *different* transformation
+  than the `#` case (replace vs. strip) - don't assume one pattern
+  covers both.
+- Floodgate's own `.` whitelist prefix is then added on top of whichever
+  sanitized form results.
+
+**There's no way to compute this in advance from the Gamertag alone
+with full confidence** - always confirm via the server's own log line
+(`Floodgate player logged in as .name joined`) rather than guessing,
+same as the general chicken-and-egg problem below.
+
+**Operational gotcha when the sanitized name contains a space**: passing
+it to `/fwhitelist add` or `/op` over RCON needs the name wrapped in
+*literal* double quotes as part of the Minecraft command text itself
+(Brigadier's quoted-string argument), not just shell/SSH quoting - e.g.
+the actual RCON payload needs to be `fwhitelist add "name 1234"`
+(quotes included), or Minecraft's command parser splits it into two
+separate (wrong) arguments at the space.
+
 **The practical catch**: since the UUID is XUID-derived, and nothing
 about a plain username string reveals its XUID, there's no way - Ansible
 pre-resolution or itzg's own container-startup resolution - to get a
