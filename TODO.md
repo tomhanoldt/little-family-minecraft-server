@@ -12,16 +12,35 @@
   is inconsistently documented, test it on the actual device.
 - [ ] Get everyone's exact in-game usernames and fill in `mc_whitelist`/
   `mc_ops` in `group_vars/all.yml` (Bedrock names need the `.` prefix -
-  see [`docs/plugins.md`](docs/plugins.md)).
-- [ ] Run the actual first deployment (`make ansible-deploy`, untagged/full
-  run) - Docker isn't installed on the mini-PC yet, and the real Minecraft
-  stack has never been started there.
+  see [`docs/plugins.md`](docs/plugins.md)). Java names are pre-resolved
+  automatically on deploy; Bedrock names need the post-connect
+  `/fwhitelist`/`/op` procedure documented there.
+- [x] ~~Run the actual first deployment~~ - **done**: Docker, Tailscale,
+  firewall, SSH hardening, and the Minecraft stack are live on the
+  mini-PC. The admin's own Java and Bedrock accounts are the only
+  whitelist/ops entries so far - see below on a real gotcha where the
+  Bedrock entry didn't end up being the name first assumed.
+- [ ] Add the kids'/friends' real usernames once known (see above).
 - [ ] Disable Tailscale key expiry for the `little-family-mincraft-server`
   device in the admin console (matching the other devices) - mentioned
   early on, never confirmed done.
+- [x] ~~Revisit the Geyser/Java-version mismatch warning seen at boot~~ -
+  **fixed**: added ViaVersion (see
+  [`docs/plugins.md`](docs/plugins.md)) rather than bumping `mc_version`,
+  since CoreProtect/ChatFilter have no `26.x` build yet.
 
 ## Follow-up once deployed
 
+- [x] ~~Whitelist the admin's Bedrock account~~ - **done**, but not under
+  the renamed Gamertag expected: the Xbox rename didn't carry over to
+  the live Bedrock connection, so the server actually saw the old
+  suffixed Gamertag with the `#` stripped - added via `/fwhitelist add`
+  + `/op` (using the exact name from the server's own log) after
+  connecting once with whitelist briefly opened. See
+  [`docs/plugins.md`](docs/plugins.md#the-suffixed-modern-gamertag-case-name1234).
+- [x] ~~Fix Bedrock chat being silently disabled~~ - **done**: turned off
+  `enforce-secure-profile` (Bedrock/Floodgate players have no Mojang
+  chat-signing key) - see [`docs/security.md`](docs/security.md#kid-safety).
 - [ ] Live-fire test `make backup-restore` end to end against the real
   server (currently only verified via a throwaway `mc_data_dir` and the
   underlying tar semantics directly - see the commit history for

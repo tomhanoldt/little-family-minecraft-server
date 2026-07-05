@@ -54,8 +54,25 @@ services:
       # Security: only whitelisted, verified accounts can join
       ONLINE_MODE: "TRUE"
       ENFORCE_WHITELIST: "TRUE"
-      WHITELIST: "{{ mc_whitelist | map(attribute='name') | join(',') }}"
-      OPS: "{{ mc_ops | join(',') }}"
+      # WHITELIST_FILE/OPS_FILE (not the plain WHITELIST/OPS name-list vars)
+      # deliberately - those resolve names via a live PlayerDB/Mojang call
+      # inside the container with no skip-on-failure mode, and a single bad
+      # name crash-loops the whole server. whitelist.json/ops.json are
+      # pre-resolved and written by Ansible instead - see
+      # roles/minecraft/tasks/resolve_players.yml.
+      WHITELIST_FILE: "/managed-config/whitelist.json"
+      EXISTING_WHITELIST_FILE: "SKIP"
+      OPS_FILE: "/managed-config/ops.json"
+      EXISTING_OPS_FILE: "SKIP"
+{% if enable_bedrock_support %}
+      # Bedrock/Floodgate players have no Mojang chat-signing key, so Java's
+      # "secure chat" enforcement silently disables their chat entirely
+      # ("Chat disabled due to missing profile public key") - a confirmed,
+      # known Geyser/Floodgate incompatibility, not a config mistake. This
+      # also disables Mojang's built-in chat-reporting tool - moderation
+      # relies on ChatFilter + CoreProtect instead (see docs/security.md).
+      ENFORCE_SECURE_PROFILE: "FALSE"
+{% endif %}
       # No LAN broadcast / no public server listing
       SNOOPER_ENABLED: "FALSE"
       # RCON for mc-backup (save-all/save-off/save-on around backups).
@@ -96,6 +113,7 @@ services:
       VERSION_FROM_MODRINTH_PROJECTS: "{{ 'true' if mc_version | upper == 'LATEST' else 'false' }}"
     volumes:
       - "{{ mc_data_dir }}/data:/data"
+      - "{{ mc_data_dir }}/managed:/managed-config:ro"
     healthcheck:
       test: ["CMD", "mc-health"]
       start_period: 60s

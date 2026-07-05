@@ -37,6 +37,44 @@ Sharing an account across multiple people breaks per-player identity on
 the server (whitelist, GriefPrevention claims, inventory/progress would
 all collide onto one shared identity).
 
+### Getting your Bedrock username if you don't have one yet
+
+On Bedrock, the "in-game username" **is your Xbox Gamertag** - tied to
+whichever Microsoft account you sign into the Minecraft app with, not
+something Minecraft manages on its own:
+
+1. Open the Minecraft app → tap the profile icon (top-left of the main
+   menu) → sign in with the Microsoft account you'll play with (the
+   child's Family account, or your own).
+2. First sign-in auto-generates a **random Gamertag** automatically -
+   this already works as-is if you don't care what it's called.
+3. To pick something recognizable instead: on a browser, go to
+   [xbox.com](https://www.xbox.com) → sign in → profile picture (top
+   right) → **Profile** → **Customize** → set a new Gamertag. **The
+   first change is free**; changes after that cost money, so do this
+   before settling on a name rather than after.
+4. **Verify it actually took effect before giving the admin a name** -
+   in one real case, renaming via xbox.com did **not** carry over to
+   the name Minecraft's Bedrock app actually presented to the server,
+   even after relaunching the app; the server still saw the old
+   gamertag. Don't assume the new name is live - the only way to be
+   sure is to actually connect once and have the admin check what name
+   showed up in the server's own log (see
+   [`plugins.md`](plugins.md#the-suffixed-modern-gamertag-case-name1234)).
+   If it doesn't match, try signing out/back into the Minecraft app, or
+   just proceed with whatever name the server actually reports.
+5. Whatever the Gamertag ends up being **as confirmed by the server
+   log** is the exact username for the whitelist (see below) - not
+   necessarily whatever xbox.com shows as your current Gamertag.
+
+**A `#1234` suffix (from your first auto-generated name colliding with
+someone else's) doesn't stop you from joining**, but it does change the
+exact string that has to be whitelisted - see the technical note in
+[`plugins.md`](plugins.md#the-suffixed-modern-gamertag-case-name1234) for
+what actually gets sent. Dropping the suffix via the free rename is
+still worth doing for a simpler name overall, just verify it per step 4
+above rather than assuming it worked.
+
 ### Setting up the Microsoft Family group and child account
 
 This is separate from, and doesn't require, your kid already having an

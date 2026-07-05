@@ -52,6 +52,24 @@ home network or the kids' safety," not "withstand nation-state attackers."
 - CoreProtect logs every world action, so if something does go wrong
   (grief, an accidental build, a rules violation) it can be rolled back and
   attributed rather than just disappearing.
+- **`enforce-secure-profile` is deliberately off** (`ENFORCE_SECURE_PROFILE:
+  "FALSE"`) - a real, confirmed incompatibility: Bedrock/Floodgate players
+  have no Mojang chat-signing key, so with this on their chat silently
+  gets disabled entirely ("Chat disabled due to missing profile public
+  key"). The tradeoff: this also disables Mojang's own built-in
+  chat-reporting tool - moderation for this server relies entirely on
+  ChatFilter (above) and CoreProtect's logging/rollback rather than
+  Mojang's reporting pipeline.
+  This is a narrower loss than it first sounds, given what this feature
+  actually is: cryptographic proof of *who sent* a chat message (anti-
+  impersonation) plus a hook into Mojang's centralized reporting, not
+  transport encryption - Java's protocol already encrypts the connection
+  independently of chat-signing, and everything additionally runs inside
+  Tailscale's WireGuard tunnel regardless (see "Network exposure" above).
+  On a server nobody unwhitelisted can even reach, the impersonation risk
+  this feature guards against is negligible; the actual loss is just
+  Mojang's reporting pipeline, which is why ChatFilter/CoreProtect are the
+  compensating control rather than a network- or encryption-level one.
 - What's logged (chat, CoreProtect, backups), how long it's kept, and who
   can access it is spelled out in full, parent-facing terms in
   [privacy.md](privacy.md) - this section is the technical summary, that

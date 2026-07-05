@@ -23,6 +23,13 @@ about exactly what, rather than leaving it unstated.
 - **Backups** are full copies of the world (including the logs above),
   taken automatically every 24h.
 
+One gap worth naming plainly: Mojang's own built-in "report a player"
+chat-reporting tool **doesn't work on this server** - it requires a
+chat-signing feature that's incompatible with Bedrock/Floodgate players
+(see [`security.md`](security.md#kid-safety)), so it's turned off for
+everyone. There's no Mojang-side reporting safety net here; ChatFilter
+and CoreProtect (above) are what stand in for it.
+
 None of this is monitored live or read routinely. It exists so that *if*
 something goes wrong (grief, a rules violation, a kid getting a message
 they shouldn't), the admin can look back and find out what happened -

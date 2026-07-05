@@ -88,6 +88,21 @@ additionally carry the special `never` tag (currently just
   identity, stray `Co-Authored-By` trailers) before considering this repo
   publishable - don't assume the machine's default git config identity is
   what should go on new commits without checking.
+- **itzg's `WHITELIST`/`OPS` env vars can crash-loop the whole server** -
+  a real production incident, not theoretical: they resolve names via a
+  live PlayerDB/Mojang call inside the container at startup with no
+  skip-on-failure mode, so one unresolvable name (e.g. a Bedrock/Floodgate
+  identity that's never connected before) is a **fatal** error that
+  restarts the entire container in a loop, taking every player down, not
+  just rejecting that one entry. Fixed by not using those env vars at
+  all - `roles/minecraft/tasks/resolve_players.yml` resolves Java names
+  via Mojang's API at Ansible-run time (failing the run cleanly on a
+  typo) and writes `whitelist.json`/`ops.json` directly, handed to the
+  container via `WHITELIST_FILE`/`OPS_FILE` (no validation, can't crash).
+  Bedrock names can't be pre-resolved (their UUID needs a real XUID from
+  an actual connection) - see `docs/plugins.md` for the post-connect
+  `/fwhitelist`/`/op` procedure. Don't reintroduce `WHITELIST`/`OPS` in
+  the compose template.
 
 ## Docs map
 

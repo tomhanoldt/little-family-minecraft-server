@@ -8,6 +8,22 @@
     - "{{ mc_data_dir }}"
     - "{{ mc_data_dir }}/data"
     - "{{ mc_data_dir }}/backups"
+    - "{{ mc_data_dir }}/managed"
+
+- name: Resolve whitelist/ops usernames to real UUIDs (fails here, not as a live crash-loop)
+  ansible.builtin.import_tasks: resolve_players.yml
+
+- name: Write whitelist.json (Java entries only - see resolve_players.yml)
+  ansible.builtin.copy:
+    content: "{{ mc_whitelist_resolved | to_nice_json }}"
+    dest: "{{ mc_data_dir }}/managed/whitelist.json"
+    mode: "0644"
+
+- name: Write ops.json (Java entries only - see resolve_players.yml)
+  ansible.builtin.copy:
+    content: "{{ mc_ops_resolved | to_nice_json }}"
+    dest: "{{ mc_data_dir }}/managed/ops.json"
+    mode: "0644"
 
 - name: Create ChatFilter plugin directory
   ansible.builtin.file:

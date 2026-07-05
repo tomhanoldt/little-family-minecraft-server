@@ -1,0 +1,88 @@
+---
+# Pre-resolve Java Edition usernames to real Mojang UUIDs at deploy time, and
+# write whitelist.json/ops.json ourselves - instead of relying on itzg's
+# WHITELIST/OPS env vars, which resolve names via a live PlayerDB/Mojang call
+# INSIDE the container at startup and have no skip-on-failure mode: a single
+# unresolvable name previously crash-looped the entire server for everyone
+# (see docs/plugins.md#the-suffixed-modern-gamertag-case-name1234). Doing the
+# lookup here instead means a bad name fails this Ansible run cleanly, before
+# ever touching the live container.
+#
+# Bedrock/Floodgate names (the "." prefix convention) are intentionally
+# excluded from resolution: their real UUID is derived from their Xbox ID,
+# which is only knowable after they've actually connected once. They're
+# skipped here (with a warning) and added later via '/fwhitelist add <name>'
+# (and '/op <name>' if needed) - see docs/plugins.md for the full procedure.
+
+- name: Split whitelist into Java names and Bedrock (dot-prefixed) names
+  ansible.builtin.set_fact:
+    mc_whitelist_java: "{{ mc_whitelist | rejectattr('name', 'match', '^\\.') | map(attribute='name') | list }}"
+    mc_whitelist_bedrock: "{{ mc_whitelist | selectattr('name', 'match', '^\\.') | map(attribute='name') | list }}"
+
+- name: Split ops into Java names and Bedrock (dot-prefixed) names
+  ansible.builtin.set_fact:
+    mc_ops_java: "{{ mc_ops | reject('match', '^\\.') | list }}"
+    mc_ops_bedrock: "{{ mc_ops | select('match', '^\\.') | list }}"
+
+- name: Warn about Bedrock names that need the post-connect procedure
+  ansible.builtin.debug:
+    msg: >-
+      Not pre-resolving Bedrock name(s) {{ (mc_whitelist_bedrock + mc_ops_bedrock) | unique }}
+      - a Floodgate identity can't be turned into a UUID before it has
+      connected at least once. Add these via '/fwhitelist add <name>' (and
+      '/op <name>' if needed) after their first connection - see
+      docs/plugins.md.
+  when: (mc_whitelist_bedrock + mc_ops_bedrock) | unique | length > 0
+
+- name: Look up Mojang UUID for each Java whitelist/op name
+  ansible.builtin.uri:
+    url: "https://api.mojang.com/users/profiles/minecraft/{{ item }}"
+    return_content: true
+    status_code: [200, 204, 404]
+  register: mojang_lookup
+  loop: "{{ (mc_whitelist_java + mc_ops_java) | unique }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Fail clearly if a Java name doesn't resolve to a real Mojang account
+  ansible.builtin.assert:
+    that: item.status == 200 and item.json.id is defined
+    fail_msg: >-
+      Could not resolve Java username '{{ item.item }}' via Mojang's API
+      (HTTP {{ item.status }}) - check for typos in mc_whitelist/mc_ops in
+      group_vars/all.yml. This check runs here, at deploy time, specifically
+      so a bad name fails the Ansible run instead of crash-looping the live
+      server.
+  loop: "{{ mojang_lookup.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Build resolved Java name -> UUID map
+  ansible.builtin.set_fact:
+    mc_java_uuids: >-
+      {{ mc_java_uuids | default({}) | combine({
+        item.item: (item.json.id[0:8] + '-' + item.json.id[8:12] + '-' + item.json.id[12:16] + '-' + item.json.id[16:20] + '-' + item.json.id[20:32])
+      }) }}
+  loop: "{{ mojang_lookup.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Build resolved whitelist.json entry list (Java names only)
+  ansible.builtin.set_fact:
+    mc_whitelist_resolved: "{{ mc_whitelist_resolved | default([]) + [{'uuid': mc_java_uuids[item], 'name': item}] }}"
+  loop: "{{ mc_whitelist_java }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Build resolved ops.json entry list (Java names only)
+  ansible.builtin.set_fact:
+    mc_ops_resolved: >-
+      {{ mc_ops_resolved | default([]) + [{'uuid': mc_java_uuids[item], 'name': item, 'level': 4, 'bypassesPlayerLimit': false}] }}
+  loop: "{{ mc_ops_java }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Default to empty lists if nothing was resolved (all names were Bedrock)
+  ansible.builtin.set_fact:
+    mc_whitelist_resolved: "{{ mc_whitelist_resolved | default([]) }}"
+    mc_ops_resolved: "{{ mc_ops_resolved | default([]) }}"

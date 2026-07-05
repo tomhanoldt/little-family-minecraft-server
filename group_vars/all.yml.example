@@ -44,13 +44,19 @@ mc_view_distance: 8
 
 # Whitelist is a MANDATORY part of this setup (no public access).
 # Enter the Minecraft names of your daughter + her friends.
-# UUID can stay empty - the itzg image resolves the name automatically on startup.
+# Java names get their UUID pre-resolved via Mojang's API at deploy time
+# (fails the Ansible run cleanly on a typo, rather than crashing the live
+# server - see roles/minecraft/tasks/resolve_players.yml). Bedrock/Floodgate
+# names (a "." prefix, e.g. ".aliceplays") can't be pre-resolved - they're
+# skipped here with a warning and need '/fwhitelist add <name>' in-game/
+# console after their FIRST connection - see docs/plugins.md.
 mc_whitelist:
   - name: "DaughterMCName"
   - name: "FriendMCName1"
   - name: "FriendMCName2"
 
 # Who gets admin commands (e.g. /gamemode, /tp)? Usually just your daughter or yourself.
+# Same Java/Bedrock split as mc_whitelist above.
 mc_ops:
   - "DaughterMCName"
 
