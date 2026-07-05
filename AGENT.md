@@ -93,9 +93,20 @@ additionally carry the special `never` tag (currently just
 
 - [`docs/security.md`](docs/security.md) - what we're actually concerned
   about and what's been done/accepted/left open
+- [`docs/privacy.md`](docs/privacy.md) - parent-facing disclosure: what
+  data is logged (chat, CoreProtect, backups), retention, who can access
+  it, and how the security work above protects it. Keep this in sync with
+  `security.md` when logging/retention behavior actually changes.
 - [`docs/server-hardware.md`](docs/server-hardware.md) - the box itself,
   memory budget, OS cleanup
 - [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the
   real bugs found getting them working
 - [`docs/joining.md`](docs/joining.md) - what a new player/family
   actually needs to do
+- [`docs/account-decision.md`](docs/account-decision.md) - Java vs.
+  Bedrock account/license comparison
+- [`docs/device-accounts.md`](docs/device-accounts.md) - creating the
+  child's Apple ID/Google Account (separate from the Microsoft account)
+- [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - iOS/
+  Android app/time limit setup
+- [`LICENSE`](LICENSE) - MIT

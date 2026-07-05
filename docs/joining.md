@@ -3,6 +3,10 @@
 This server is **private and whitelisted** - nobody can join without both a
 Tailscale invite and a whitelist entry. No public IP, no port forwarding.
 
+Before joining, parents may want to read
+[`privacy.md`](privacy.md) - what's logged (chat, world actions via
+CoreProtect), who can see it, and how that data is protected.
+
 ## What you need
 
 ### A Minecraft account
@@ -34,6 +38,13 @@ the server (whitelist, GriefPrevention claims, inventory/progress would
 all collide onto one shared identity).
 
 ### Setting up the Microsoft Family group and child account
+
+This is separate from, and doesn't require, your kid already having an
+Apple ID or Google Account - see
+[`device-accounts.md`](device-accounts.md) for that (device-level)
+account layer, which you'll also want for app-store access and the
+[screen-time controls](screen-time-controls.md), just not as a
+prerequisite for the steps below.
 
 If you don't already have this set up:
 

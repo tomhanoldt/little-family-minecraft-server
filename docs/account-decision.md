@@ -72,14 +72,17 @@ What actually helps, layered:
 
 ## What each parent needs to do (if going with Bedrock)
 
-1. Set up a Microsoft Family group (if not already done) with your child
+1. If the child doesn't already have a device account (Apple ID/Google
+   Account) under your Family Sharing/Family Link group, set that up
+   first - see [`device-accounts.md`](device-accounts.md).
+2. Set up a Microsoft Family group (if not already done) with your child
    as a managed child account. One-time, ~10 minutes.
-2. Sign the child into the Minecraft app with that account.
-3. Send the server admin your child's **exact in-game Bedrock username**
+3. Sign the child into the Minecraft app with that account.
+4. Send the server admin your child's **exact in-game Bedrock username**
    (not their Microsoft account email/name).
-4. Accept the Tailscale invite link the admin sends you and install
+5. Accept the Tailscale invite link the admin sends you and install
    Tailscale on the device.
-5. Consider setting up device-side screen time/app controls - see
+6. Consider setting up device-side screen time/app controls - see
    [`screen-time-controls.md`](screen-time-controls.md).
 
 See [`joining.md`](joining.md) for the full step-by-step once this

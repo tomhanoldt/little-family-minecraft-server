@@ -52,6 +52,10 @@ home network or the kids' safety," not "withstand nation-state attackers."
 - CoreProtect logs every world action, so if something does go wrong
   (grief, an accidental build, a rules violation) it can be rolled back and
   attributed rather than just disappearing.
+- What's logged (chat, CoreProtect, backups), how long it's kept, and who
+  can access it is spelled out in full, parent-facing terms in
+  [privacy.md](privacy.md) - this section is the technical summary, that
+  one is the disclosure.
 
 ## OS hardening
 
@@ -107,10 +111,17 @@ until itzg bumps the dependency. See [TODO.md](../TODO.md).
 
 ## Publishing this repo
 
-Before this repo is ever made public: full git history was audited (not
-just current files) for secrets, real names, real IPs, and the real
-tailnet identifier - clean. Commit author identity was rewritten from a
-personal Gmail address to a deliberately-chosen public contact address.
-Real secrets (Tailscale authkey, RCON password) live only in the gitignored
-`group_vars/all.yml`, never committed - `group_vars/all.yml.example` carries
-only placeholders.
+This repo is intended to be public. Before that: full git history was
+audited (not just current files) for secrets, real names, real IPs, and
+the real tailnet identifier - clean. Commit author identity was rewritten
+from a personal Gmail address to a deliberately-chosen public contact
+address. Real secrets (Tailscale authkey, RCON password) live only in the
+gitignored `group_vars/all.yml`, never committed - `group_vars/all.yml.example`
+carries only placeholders. Licensed MIT (see [`LICENSE`](../LICENSE)).
+
+GitHub's own **secret scanning alerts** are automatic for public repos at
+no cost - no action needed there. **Push protection** (blocking a push
+that contains a detected secret before it's even accepted) is a separate
+toggle, off by default even on public repos, and needs to be turned on
+manually once the repo exists on GitHub (Settings → Code security and
+analysis) - tracked in [TODO.md](../TODO.md).

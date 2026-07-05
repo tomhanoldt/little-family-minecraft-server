@@ -2,10 +2,10 @@
 
 ## Blocking the actual first deployment
 
-- [ ] **Decide Java vs. Bedrock with the other parents** - see
-  [`docs/account-decision.md`](docs/account-decision.md).
-- [ ] Set up Microsoft Family accounts for the kids (once the above is
-  decided) - see [`docs/joining.md`](docs/joining.md).
+- [x] ~~Decide Java vs. Bedrock with the other parents~~ - **decided:
+  Bedrock**. See [`docs/account-decision.md`](docs/account-decision.md).
+- [ ] Set up Microsoft Family accounts for the kids - see
+  [`docs/joining.md`](docs/joining.md).
 - [ ] Set up device-side app/time limits per
   [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - note
   the iOS "All Apps & Categories" + stricter category limit interaction
@@ -39,13 +39,23 @@
 - [ ] Watch for `mc-image-helper` bumping its bundled `scala-library` past
   2.13.9 (resolves `CVE-2022-36944`, currently tracked but not suppressed).
 
-## Before publishing this repo (if ever)
+## Before publishing this repo
 
-- [ ] Final call on whether/when to make this public - git history has
-  already been scrubbed (author identity, no secrets/PII in any commit)
-  in preparation, but no remote exists yet and nothing has been pushed.
-- [ ] If publishing: create the GitHub repo, push, confirm the CI
-  workflows (`lint.yml`, `verify.yml`, `security.yml`) actually pass
-  there, and enable Dependabot alerts in repo settings (`dependabot.yml`
-  alone only covers version-update PRs, not the separate
-  vulnerability-alert toggle).
+Decided: **this repo will be public**, with a blog post about it at
+[www.tomhanoldt.info](https://www.tomhanoldt.info) later. Git history has
+already been scrubbed (author identity, no secrets/PII in any commit) in
+preparation, but no remote exists yet and nothing has been pushed.
+
+- [ ] Create the GitHub repo, push, confirm the CI workflows (`lint.yml`,
+  `verify.yml`, `security.yml`) actually pass there.
+- [ ] Enable Dependabot **alerts** in repo settings (Settings → Code
+  security and analysis) - `dependabot.yml` alone only covers
+  version-update PRs, not the separate vulnerability-alert toggle.
+- [ ] Enable GitHub **push protection** for secret scanning (Settings →
+  Code security and analysis → Push protection) - secret scanning
+  *alerts* are automatically on for public repos already (free, no
+  action needed), but push protection (blocking a push containing a
+  detected secret *before* it lands) is a separate toggle, off by
+  default, that needs to be turned on explicitly even for public repos.
+- [ ] Double check the `LICENSE` file's year/attribution still reads
+  correctly whenever this is actually pushed.

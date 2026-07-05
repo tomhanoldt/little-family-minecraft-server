@@ -22,6 +22,9 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
 
 - [`docs/security.md`](docs/security.md) - what we're concerned about and
   what's been done about it
+- [`docs/privacy.md`](docs/privacy.md) - what data exists (chat logs,
+  CoreProtect, backups), who can see it, and how it's protected - written
+  for the other parents
 - [`docs/server-hardware.md`](docs/server-hardware.md) - the mini-PC itself,
   memory budget, OS cleanup
 - [`docs/plugins.md`](docs/plugins.md) - what each plugin does and the real
@@ -30,6 +33,8 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
   do to join
 - [`docs/account-decision.md`](docs/account-decision.md) - Java vs. Bedrock
   account/license comparison for the other parents
+- [`docs/device-accounts.md`](docs/device-accounts.md) - creating a secure
+  Apple ID/Google Account for your kid, ahead of the Microsoft account
 - [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - setting
   up app/time limits on iOS and Android
 - [`AGENT.md`](AGENT.md) - operating notes for anyone (human or AI)
@@ -128,7 +133,7 @@ Sharing is the cleaner, more privacy-friendly way.
 | **EssentialsX** | `/home`, `/spawn`, `/tpa`, basic commands | Makes navigation easier for kids without needing admin rights |
 | **GriefPrevention** | Kids "claim" their build area themselves with a golden shovel | Nobody can accidentally or deliberately destroy another kid's build |
 | **CoreProtect** | Logs every action, allows rollback | If something does go wrong: `/co rollback` undoes it |
-| **ChatControl** | Filters profanity, spam, ad links in chat | Automatic chat hygiene without you having to read along live |
+| **ChatFilter** | Filters profanity, spam, ad links in chat | Automatic chat hygiene without you having to read along live |
 
 All plugins are automatically loaded from Modrinth matching the Minecraft
 version (`MODRINTH_PROJECTS`) - no manual jar hunting needed, and they're
@@ -163,3 +168,7 @@ docker compose -f /opt/minecraft/docker-compose.yml restart mc
 # (e.g. adding a new friend to the whitelist)
 make ansible-deploy
 ```
+
+## License
+
+[MIT](LICENSE) - © Tom Hanoldt ([www.tomhanoldt.info](https://www.tomhanoldt.info))

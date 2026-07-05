@@ -17,7 +17,8 @@ about.
 
 Requires the child to have a Google Account managed via Family Link (same
 kind of setup as Microsoft Family - a parent is the manager, the child's
-account exists under it).
+account exists under it). If you haven't created that account yet, see
+[`device-accounts.md`](device-accounts.md) first.
 
 - **Daily device limit**: an overall cap on total device use per day.
 - **Category limits**: Family Link supports limiting entire categories
@@ -43,7 +44,9 @@ Setup: Family Link app → select child → **Screen time** → **Daily limit**
 
 Requires the child's device to be part of your **Family Sharing** group so
 you can manage it remotely from your own device (or a Screen Time passcode
-set directly on the child's device if not using Family Sharing).
+set directly on the child's device if not using Family Sharing). If you
+haven't set up the child's Apple ID/Family Sharing membership yet, see
+[`device-accounts.md`](device-accounts.md) first.
 
 - **App Limits**: restrict specific apps or categories (e.g. "Games",
   "Social", "Entertainment") to a daily time budget.
