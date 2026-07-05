@@ -60,6 +60,46 @@ These were all found by actually booting the real containers locally
   newer protocol Geyser now uses, without touching the actual server
   version or plugin compatibility. Revisit a real version bump once
   CoreProtect/ChatFilter ship `26.x`-compatible builds.
+- **The itzg image's default-gamemode variable is `MODE`, not `GAMEMODE`.**
+  Setting `GAMEMODE` silently did nothing - no error, no log line, the
+  server just kept its old default - since it isn't a variable the image
+  recognizes at all. Caught by checking itzg's own docs after the change
+  had no effect, not by guessing from the naming pattern of other
+  variables (which otherwise matches, e.g. `DIFFICULTY`, `MOTD`).
+- **`CUSTOM_SERVER_PROPERTIES` only accepts strict `KEY=VALUE` lines** -
+  no comments inside the block scalar itself. A `#`-prefixed explanatory
+  line inside it doesn't get ignored; it fails the *entire* property
+  update with `Failed to update server.properties`, silently leaving
+  every property in that block unapplied (not just the commented one).
+  Same underlying mistake as the `MODRINTH_PROJECTS` block scalar
+  earlier - comments belong *outside* any block scalar meant for
+  line-based machine input, never inside it.
+- **`force-gamemode=true` is required for `MODE` to actually apply to
+  already-existing players** - `MODE`/`gamemode` only sets the default
+  for brand-new joiners; anyone who already connected once before (e.g.
+  in Survival, before this was set to Creative) keeps their old mode
+  forever otherwise. Set alongside `MODE` for "everyone always plays in
+  the same mode" behavior.
+- **Paper creates an empty `permissions.yml` placeholder on first boot.**
+  Pre-seeding it the same way as `chatfilter-filter.yml` (`force: false`,
+  to avoid clobbering a live admin edit) backfired here: the empty
+  placeholder already "exists," so `force: false` skipped writing our
+  actual content on every subsequent deploy, silently leaving the file
+  permanently empty. Unlike ChatFilter (which the plugin itself
+  regenerates with real defaults if missing), Paper never re-populates
+  an empty permissions.yml on its own - there's no live-edit risk here,
+  so this one always syncs (no `force: false`).
+
+## Letting non-ops use /gamemode themselves
+
+By default `/gamemode` requires op (Bukkit has only one flat permission
+node for the whole command, `minecraft.command.gamemode` - no separate
+"self" vs. "other players" split). `roles/minecraft/files/permissions.yml`
+grants it to everyone (`default: true`) so whitelisted-but-not-opped
+players (e.g. a parent or kid who shouldn't have admin commands) can
+still toggle their own gamemode - accepting, on a small private family
+server, that this technically also lets them change someone *else's*
+gamemode, since Bukkit doesn't expose a narrower node to restrict to.
 
 ## Whitelisting Bedrock/Floodgate players
 

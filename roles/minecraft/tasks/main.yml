@@ -40,6 +40,16 @@
     force: false
   when: enable_chat_filter | bool
 
+- name: Pre-seed permissions.yml so non-ops can use /gamemode themselves
+  ansible.builtin.copy:
+    src: permissions.yml
+    dest: "{{ mc_data_dir }}/data/permissions.yml"
+    mode: "0644"
+    # No force: false here (unlike ChatFilter's filter.yml) - Paper itself
+    # creates an EMPTY permissions.yml placeholder on first boot, which
+    # force: false would then treat as "already exists" and never actually
+    # write our content into. Always sync this one.
+
 - name: Generate docker-compose.yml from template
   ansible.builtin.template:
     src: docker-compose.yml.j2

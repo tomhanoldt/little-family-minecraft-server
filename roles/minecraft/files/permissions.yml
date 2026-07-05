@@ -1,0 +1,10 @@
+# Lets every whitelisted player (not just ops) run /gamemode themselves,
+# without granting full op/admin access - see docs/plugins.md.
+#
+# Bukkit only has a single flat permission node for the whole /gamemode
+# command - there's no separate "self" vs. "other players" split, so this
+# also technically lets a non-op player change someone ELSE's gamemode.
+# Accepted tradeoff for a small private family server.
+permissions:
+  minecraft.command.gamemode:
+    default: true

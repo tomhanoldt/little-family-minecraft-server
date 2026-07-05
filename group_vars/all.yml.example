@@ -38,6 +38,8 @@ mc_memory: "6G"                # realistic value for ~8 players on 16GB total RA
 # 16GB box: OS ~1G + this 7G + mc-backup's 1G leaves ~7G of slack.
 mc_container_mem_limit: "7G"
 mc_difficulty: "easy"
+mc_gamemode: "creative"       # "survival" or "creative" - non-ops can also
+                              # self-toggle via /gamemode (see roles/minecraft/files/permissions.yml)
 mc_motd: "§bFamily server – invited friends only! §d<3"
 mc_max_players: 8
 mc_view_distance: 8

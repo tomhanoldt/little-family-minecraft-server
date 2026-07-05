@@ -74,6 +74,8 @@ The mini-PC needs: fresh Ubuntu, SSH access with a sudo-capable user.
    - `mc_whitelist`: Minecraft names of your daughter + her friends
    - `mc_ops`: who gets admin rights (usually just your daughter or you)
    - `mc_rcon_password`: change this from the placeholder to your own value
+   - `mc_gamemode`: `creative` or `survival` - non-ops can also self-toggle
+     via `/gamemode` (see `docs/plugins.md`)
    - Safety toggles (`enable_chat_filter`, `enable_anti_grief_claims`, ...)
      on/off as you like
    - `mc_memory`: with 16GB total RAM, 6G is a good value for ~8 players

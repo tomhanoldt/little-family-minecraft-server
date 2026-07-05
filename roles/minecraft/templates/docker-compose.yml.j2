@@ -46,9 +46,25 @@ services:
       MEMORY: "{{ mc_memory }}"
       TZ: "{{ timezone }}"
       DIFFICULTY: "{{ mc_difficulty }}"
+      # The itzg image's variable for this is "MODE", not "GAMEMODE" -
+      # verified against itzg's own docs after GAMEMODE silently did nothing.
+      MODE: "{{ mc_gamemode }}"
       MOTD: "{{ mc_motd }}"
       MAX_PLAYERS: "{{ mc_max_players }}"
       VIEW_DISTANCE: "{{ mc_view_distance }}"
+      # CUSTOM_SERVER_PROPERTIES only accepts strict KEY=VALUE lines - no
+      # comments inside the block itself, confirmed the hard way (it fails
+      # the whole property update, not just skip the bad line).
+      # - spawn-protection=0: vanilla's own spawn radius (default 16)
+      #   silently reverts breaks/placements for non-ops, independent of
+      #   and redundant with GriefPrevention's own claims (docs/plugins.md).
+      # - force-gamemode=true: without this, MODE below only sets the
+      #   default for brand-new players - anyone who already joined before
+      #   keeps their old mode forever. This forces everyone to MODE on
+      #   every join/respawn, matching "everyone just plays in Creative."
+      CUSTOM_SERVER_PROPERTIES: |
+        spawn-protection=0
+        force-gamemode=true
       UID: "1000"
       GID: "1000"
       # Security: only whitelisted, verified accounts can join

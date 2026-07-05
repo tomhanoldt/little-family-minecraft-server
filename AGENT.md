@@ -103,6 +103,27 @@ additionally carry the special `never` tag (currently just
   an actual connection) - see `docs/plugins.md` for the post-connect
   `/fwhitelist`/`/op` procedure. Don't reintroduce `WHITELIST`/`OPS` in
   the compose template.
+- **Never put `#`-comments inside a YAML block scalar (`|`) meant for
+  line-based machine input** (env vars like `MODRINTH_PROJECTS` or
+  `CUSTOM_SERVER_PROPERTIES` in `docker-compose.yml.j2`) - happened
+  *twice*: once crash-looped the server (a comment got parsed as a
+  plugin name), once broke `CUSTOM_SERVER_PROPERTIES` entirely (fails
+  the whole property update, not just the commented line). Explanatory
+  comments always go *outside* the block scalar, immediately above the
+  env var key.
+- **itzg's default-gamemode variable is `MODE`, not `GAMEMODE`** - the
+  latter is silently ignored (no error), despite matching the naming
+  pattern of `DIFFICULTY`/`MOTD`/etc. Also needs `force-gamemode=true`
+  (via `CUSTOM_SERVER_PROPERTIES`) to actually apply to players who
+  already joined once before - `MODE` alone only sets the default for
+  brand-new joiners.
+- **Paper writes an empty `permissions.yml` placeholder on first boot.**
+  Pre-seeding a file with `force: false` (the `chatfilter-filter.yml`
+  pattern) assumes the *plugin* would otherwise regenerate real defaults
+  if missing - that's true for ChatFilter, not for `permissions.yml`,
+  where an empty file left by Paper itself means `force: false` never
+  actually writes anything, forever. Check whether "already exists"
+  really means "already has real content" before reusing this pattern.
 
 ## Docs map
 
