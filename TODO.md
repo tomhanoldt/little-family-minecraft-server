@@ -42,6 +42,12 @@
 - [x] ~~Fix Bedrock chat being silently disabled~~ - **done**: turned off
   `enforce-secure-profile` (Bedrock/Floodgate players have no Mojang
   chat-signing key) - see [`docs/security.md`](docs/security.md#kid-safety).
+- [ ] Confirm `/skin set <name>` actually works in-game for a real player
+  (verified the plugin loads cleanly and resolves via Modrinth, not the
+  in-game command itself). Also check whether the "Floodgate skin
+  listener registered" log line means Bedrock players' real skins now
+  show correctly to Java players, or just partial support - see
+  [`docs/plugins.md`](docs/plugins.md).
 - [ ] Live-fire test `make backup-restore` end to end against the real
   server (currently only verified via a throwaway `mc_data_dir` and the
   underlying tar semantics directly - see the commit history for

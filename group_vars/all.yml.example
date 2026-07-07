@@ -89,6 +89,11 @@ enable_chat_filter: true          # ChatFilter: blocks links/scam-list content +
                                   # them, so roles/minecraft/files/chatfilter-filter.yml pre-seeds
                                   # it with the website/IP filter + GamerSafer's moderation list
                                   # switched on - verified this survives restarts unmodified.)
+enable_skins_restorer: true      # SkinsRestorer: /skin set <name|url> lets players
+                                  # pick their own look - independent of their real
+                                  # Mojang skin. Doesn't affect what Bedrock players
+                                  # look like to Java players - that's a separate,
+                                  # currently-unreliable Floodgate limitation.
 # Limit play times (optional). If enabled, a cronjob starts/stops
 # the server automatically only within this time window.
 enable_playtime_schedule: false

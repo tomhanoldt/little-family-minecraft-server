@@ -138,6 +138,7 @@ Sharing is the cleaner, more privacy-friendly way.
 | **GriefPrevention** | Kids "claim" their build area themselves with a golden shovel | Nobody can accidentally or deliberately destroy another kid's build |
 | **CoreProtect** | Logs every action, allows rollback | If something does go wrong: `/co rollback` undoes it |
 | **ChatFilter** | Filters profanity, spam, ad links in chat | Automatic chat hygiene without you having to read along live |
+| **SkinsRestorer** | `/skin set <name\|url>` to pick any skin | Kids can look how they want without a paid Java skin |
 
 All plugins are automatically loaded from Modrinth matching the Minecraft
 version (`MODRINTH_PROJECTS`) - no manual jar hunting needed, and they're

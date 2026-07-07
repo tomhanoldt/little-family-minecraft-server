@@ -13,6 +13,7 @@ plugin descriptions).
 | **GriefPrevention** | Kids claim their own build area with a golden shovel; nobody else can build/break inside a claim they don't own | `enable_anti_grief_claims` |
 | **CoreProtect** | Logs every world action; `/co rollback` undoes grief or accidents | `enable_coreprotect` |
 | **ChatFilter** | Blocks links/IP addresses and known-bad content in chat | `enable_chat_filter` |
+| **SkinsRestorer** | `/skin set <name\|url>` - pick any skin, independent of your real Mojang skin | `enable_skins_restorer` |
 
 All installed automatically from Modrinth (or directly from GeyserMC's own
 download server for Floodgate - see below), matching the pinned Minecraft
@@ -89,6 +90,19 @@ These were all found by actually booting the real containers locally
   regenerates with real defaults if missing), Paper never re-populates
   an empty permissions.yml on its own - there's no live-edit risk here,
   so this one always syncs (no `force: false`).
+- **SkinsRestorer** resolved from Modrinth (slug `skinsrestorer`,
+  supports `1.21.4` directly, no beta-channel workaround needed like
+  Geyser) and loaded cleanly in a live boot test, including auto-detecting
+  Floodgate ("Floodgate skin listener registered") for some Bedrock skin
+  handling - not independently verified in-game, but a promising sign
+  given a [separate plugin](https://modrinth.com/plugin/bedrock-skin-restorer)
+  otherwise exists specifically because Floodgate's own bridging is
+  documented as unreliable. Checked its security history before adding
+  it: one historical high-severity RCE
+  ([GHSA-mp3v-c49h-86mm](https://github.com/SkinsRestorer/SkinsRestorer/security/advisories/GHSA-mp3v-c49h-86mm)),
+  but it only affects "Proxy Mode" (BungeeCord/Velocity) - this server
+  runs standalone (confirmed in the boot log) - and was patched in
+  15.0.0 regardless; we're on 15.12.4.
 
 ## Letting non-ops use /gamemode themselves
 

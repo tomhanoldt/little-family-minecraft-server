@@ -16,6 +16,7 @@ enable_essentials: true
 enable_anti_grief_claims: true
 enable_coreprotect: true
 enable_chat_filter: true
+enable_skins_restorer: true
 enable_backup: true
 backup_interval: "24h"
 backup_retention_days: 7
