@@ -1,10 +1,22 @@
 # Lets every whitelisted player (not just ops) run /gamemode themselves,
 # without granting full op/admin access - see docs/plugins.md.
 #
-# Bukkit only has a single flat permission node for the whole /gamemode
-# command - there's no separate "self" vs. "other players" split, so this
-# also technically lets a non-op player change someone ELSE's gamemode.
-# Accepted tradeoff for a small private family server.
+# Two separate grants are needed here, not one: EssentialsX registers its
+# own "gamemode" command (same label as vanilla's), and Bukkit gives
+# plugin commands priority over the vanilla fallback of the same name -
+# so in practice players' /gamemode goes through Essentials, not vanilla,
+# and is gated on essentials.gamemode, not minecraft.command.gamemode.
+# Granting only the vanilla node (as this file used to) does nothing on a
+# server with EssentialsX installed. The vanilla node is kept too in case
+# Essentials is ever disabled and the vanilla command becomes reachable
+# again.
+#
+# Unlike vanilla's single flat node, Essentials actually splits self vs.
+# other players (essentials.gamemode.others/.all) - only the self-only
+# node is granted here, so non-ops can toggle their OWN gamemode but not
+# anyone else's.
 permissions:
   minecraft.command.gamemode:
+    default: true
+  essentials.gamemode:
     default: true

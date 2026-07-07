@@ -106,14 +106,28 @@ These were all found by actually booting the real containers locally
 
 ## Letting non-ops use /gamemode themselves
 
-By default `/gamemode` requires op (Bukkit has only one flat permission
-node for the whole command, `minecraft.command.gamemode` - no separate
-"self" vs. "other players" split). `roles/minecraft/files/permissions.yml`
-grants it to everyone (`default: true`) so whitelisted-but-not-opped
-players (e.g. a parent or kid who shouldn't have admin commands) can
-still toggle their own gamemode - accepting, on a small private family
-server, that this technically also lets them change someone *else's*
-gamemode, since Bukkit doesn't expose a narrower node to restrict to.
+By default `/gamemode` requires op. `roles/minecraft/files/permissions.yml`
+grants `minecraft.command.gamemode` and `essentials.gamemode` to everyone
+(`default: true`) so whitelisted-but-not-opped players (e.g. a parent or
+kid who shouldn't have admin commands) can toggle their own gamemode.
+
+**Both grants are needed, not one.** EssentialsX registers its own
+`gamemode` command under the same label as vanilla's, and Bukkit gives
+plugin commands priority over the vanilla fallback of the same name - so
+in practice a player's `/gamemode` is routed through Essentials, gated on
+`essentials.gamemode`, not vanilla's `minecraft.command.gamemode`.
+Granting only the vanilla node (an earlier version of this file did)
+looks correct but does nothing with EssentialsX installed - confirmed by
+inspecting `EssentialsX-2.21.0.jar`'s bundled `plugin.yml` on the live
+server, which shows its own `gamemode:` command entry and permission
+tree. The vanilla node is kept anyway in case Essentials is ever
+disabled.
+
+Unlike vanilla's single flat node, Essentials actually splits self vs.
+other players (`essentials.gamemode.others`/`essentials.gamemode.all`,
+both left at their default `op`-only) - so, unlike the vanilla-only
+approach, non-ops here can toggle their *own* gamemode but not anyone
+else's.
 
 ## Whitelisting Bedrock/Floodgate players
 
