@@ -76,9 +76,16 @@ RESTful sensor. No broker, no HA-side credentials to configure at all.
 - **Game stats** come from two sources: Minecraft's own per-player
   `world/stats/<uuid>.json` files (the authoritative, current format -
   not RCON, which has no reliable stats-dump command), and RCON's `list`
-  command for who's online right now. UUID → name mapping reuses the
-  same `whitelist.json` Ansible already generates - see
-  [plugins.md](plugins.md). Both are read fresh on every HTTP request by
+  command for who's online right now. UUID → name mapping reads Paper's
+  own live `data/whitelist.json` directly - **not** the Ansible-templated
+  `managed/whitelist.json`, which only ever has Java-resolved names
+  (Bedrock names can't be pre-resolved via Mojang's API and only ever
+  land in Paper's own copy, added live via `/fwhitelist` - see
+  [plugins.md](plugins.md)). Getting this wrong the first time silently
+  dropped every Bedrock player from the JSON output entirely (3 of 4
+  players in this family's case), caught only once real sensors in Home
+  Assistant showed values for the one Java player and "unknown"
+  everywhere else. Both files are read fresh on every HTTP request by
   `roles/minecraft/files/mc_stats_server.py`, a stdlib-only
   `http.server` script (no MQTT client, no third-party dependency at
   all) - it runs as its own systemd service (`mc-stats.service`), not in

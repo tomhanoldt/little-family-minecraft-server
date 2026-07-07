@@ -3,10 +3,14 @@
 
 Reads vanilla per-player stats directly from world/stats/<uuid>.json (the
 authoritative source - RCON has no reliable stats-dump command), matches
-UUIDs to names via the same whitelist.json Ansible already generates, and
-asks RCON's own "list" command who's online right now. No secrets are
-accepted on the command line (visible to any local user via `ps`) - the
-RCON password comes from a single, root-only-readable env file instead.
+UUIDs to names via Paper's own live data/whitelist.json (not the
+Ansible-templated managed/whitelist.json - that one only ever has
+Java-resolved names, since Bedrock names can't be pre-resolved via
+Mojang's API and are added later via /fwhitelist directly into Paper's
+copy, never Ansible's), and asks RCON's own "list" command who's online
+right now. No secrets are accepted on the command line (visible to any
+local user via `ps`) - the RCON password comes from a single,
+root-only-readable env file instead.
 
 Deliberately no MQTT broker, no extra Python dependencies beyond the
 standard library - Home Assistant's built-in RESTful sensor polls this
@@ -15,6 +19,7 @@ or network path to wire up on the Home Assistant side at all.
 """
 import argparse
 import json
+import re
 import socket
 import struct
 import sys
@@ -23,6 +28,12 @@ from pathlib import Path
 
 RCON_AUTH = 3
 RCON_EXEC = 2
+
+# Minecraft's own §-prefixed color/formatting codes (e.g. "§4monotom23") -
+# RCON's raw "list" response is full of these, and they're not whitespace
+# so a plain .strip() leaves them in place, silently breaking every name
+# comparison against the whitelist.
+_FORMATTING_CODE = re.compile("§.")
 
 
 def rcon_command(host, port, password, command, timeout=5):
@@ -63,8 +74,8 @@ def parse_env_file(path):
     return env
 
 
-def load_whitelist_names(managed_dir):
-    path = Path(managed_dir) / "whitelist.json"
+def load_whitelist_names(data_dir):
+    path = Path(data_dir) / "whitelist.json"
     if not path.exists():
         return {}
     entries = json.loads(path.read_text())
@@ -89,8 +100,8 @@ def read_player_stats(data_dir, uuid_dashed):
     }
 
 
-def build_stats(rcon_password, data_dir, managed_dir):
-    names_by_uuid = load_whitelist_names(managed_dir)
+def build_stats(rcon_password, data_dir):
+    names_by_uuid = load_whitelist_names(data_dir)
 
     try:
         online_raw = rcon_command("127.0.0.1", 25575, rcon_password, "list")
@@ -98,16 +109,19 @@ def build_stats(rcon_password, data_dir, managed_dir):
         print(f"RCON unreachable, skipping online status: {e}", file=sys.stderr)
         online_raw = ""
 
+    online_raw = _FORMATTING_CODE.sub("", online_raw)
     online_names = set()
     if ":" in online_raw:
         _, _, names_part = online_raw.partition(":")
         online_names = {n.strip() for n in names_part.split(",") if n.strip()}
+    # Bedrock names may or may not carry their dot prefix over RCON
+    # depending on client/Floodgate version - normalize both sides so a
+    # mismatch on either end still matches correctly.
+    online_names_normalized = {n.lstrip(".") for n in online_names}
 
     players = {}
     for uuid_nodash, name in names_by_uuid.items():
-        # Bedrock names are dot-prefixed in whitelist.json but arrive over
-        # RCON without the dot - match either form.
-        is_online = name in online_names or f".{name}" in online_names
+        is_online = name.lstrip(".") in online_names_normalized
         entry = {"online": is_online}
         stats = read_player_stats(data_dir, to_dashed_uuid(uuid_nodash))
         if stats:
@@ -120,14 +134,14 @@ def build_stats(rcon_password, data_dir, managed_dir):
     }
 
 
-def make_handler(rcon_password, data_dir, managed_dir):
+def make_handler(rcon_password, data_dir):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             if self.path != "/stats":
                 self.send_response(404)
                 self.end_headers()
                 return
-            body = json.dumps(build_stats(rcon_password, data_dir, managed_dir)).encode("utf8")
+            body = json.dumps(build_stats(rcon_password, data_dir)).encode("utf8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -144,12 +158,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--env-file", required=True, help="path to root-only-readable file with RCON_PASSWORD")
     parser.add_argument("--data-dir", required=True)
-    parser.add_argument("--managed-dir", required=True)
     parser.add_argument("--port", type=int, required=True)
     args = parser.parse_args()
 
     env = parse_env_file(args.env_file)
-    handler = make_handler(env["RCON_PASSWORD"], args.data_dir, args.managed_dir)
+    handler = make_handler(env["RCON_PASSWORD"], args.data_dir)
     ThreadingHTTPServer(("0.0.0.0", args.port), handler).serve_forever()
 
 

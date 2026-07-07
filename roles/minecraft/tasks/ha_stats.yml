@@ -2,9 +2,10 @@
 # Serves Minecraft player/server stats as JSON for Home Assistant to poll
 # directly via its built-in RESTful sensor - see docs/home-assistant.md for
 # what shows up and why this is built the way it is (RCON stays
-# loopback-only, no secrets on the process command line, whitelist.json
-# reused for UUID->name mapping, stdlib-only HTTP server so there's no
-# broker credentials or extra Python dependency to install at all).
+# loopback-only, no secrets on the process command line, UUID->name mapping
+# read from Paper's own data/whitelist.json, stdlib-only HTTP server so
+# there's no broker credentials or extra Python dependency to install at
+# all).
 
 - name: Create directory for the stats server's credentials file
   ansible.builtin.file:
@@ -17,19 +18,23 @@
     src: ha-stats.env.j2
     dest: /etc/minecraft/ha-stats.env
     mode: "0600"
+  notify: Restart mc-stats service
 
 - name: Deploy the stats server script
   ansible.builtin.copy:
     src: mc_stats_server.py
     dest: "{{ mc_data_dir }}/mc_stats_server.py"
     mode: "0700"
+  notify: Restart mc-stats service
 
 - name: Deploy stats server systemd service
   ansible.builtin.template:
     src: mc-stats.service.j2
     dest: /etc/systemd/system/mc-stats.service
     mode: "0644"
-  notify: Reload systemd daemon
+  notify:
+    - Reload systemd daemon
+    - Restart mc-stats service
 
 # Flush now, don't wait for end-of-play: on a fresh install systemd has
 # never seen this unit file before, so starting it below would fail
@@ -37,6 +42,12 @@
 - name: Flush handlers so systemd knows about the new unit file
   ansible.builtin.meta: flush_handlers
 
+# state: started is idempotent - it won't restart an already-running
+# service just because its script/unit file content changed underneath
+# it (a real bug this project hit: a stats-server code fix was deployed
+# but kept serving stale in-memory results until manually restarted).
+# The notify: above on the content-changing tasks handles that; this
+# task only covers the first-boot/not-yet-running case.
 - name: Enable and start the stats server
   ansible.builtin.systemd:
     name: mc-stats

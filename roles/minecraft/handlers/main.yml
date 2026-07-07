@@ -1,0 +1,5 @@
+---
+- name: Restart mc-stats service
+  ansible.builtin.systemd:
+    name: mc-stats
+    state: restarted

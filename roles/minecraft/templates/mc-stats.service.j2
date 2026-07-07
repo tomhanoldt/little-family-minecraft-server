@@ -7,7 +7,6 @@ After=network.target
 ExecStart=/usr/bin/python3 {{ mc_data_dir }}/mc_stats_server.py \
   --env-file /etc/minecraft/ha-stats.env \
   --data-dir {{ mc_data_dir }}/data \
-  --managed-dir {{ mc_data_dir }}/managed \
   --port {{ mc_stats_port }}
 Restart=on-failure
 RestartSec=5
