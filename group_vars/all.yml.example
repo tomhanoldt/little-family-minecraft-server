@@ -110,3 +110,15 @@ backup_retention_days: 7
 # Freely chosen/generated, doesn't need to be known anywhere else -
 # don't confuse this with real Minecraft account passwords.
 mc_rcon_password: "CHANGE_ME_generate_a_random_string"
+
+# =============================================================
+# HOME ASSISTANT STATS (optional)
+# =============================================================
+# See docs/home-assistant.md. Both host stats (CPU/mem/disk, via Glances)
+# and game/player stats (playtime, deaths, who's online, via a small
+# built-in JSON server) work the same way: Home Assistant's built-in
+# RESTful sensor polls this box directly over the tailnet (tailnet-only
+# via UFW + a Tailscale ACL grant, no broker, no credentials to configure
+# on the Home Assistant side at all).
+enable_home_assistant_stats: false
+mc_stats_port: 25566

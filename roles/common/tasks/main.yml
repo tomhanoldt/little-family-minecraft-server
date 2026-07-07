@@ -48,3 +48,8 @@
 - name: Remove unrelated OS bloat (leftover snaps, stray graphical target)
   ansible.builtin.import_tasks: os_cleanup.yml
   tags: os_cleanup
+
+- name: Install Glances for Home Assistant host-stats dashboard
+  ansible.builtin.import_tasks: glances.yml
+  tags: home_assistant_stats
+  when: enable_home_assistant_stats | bool

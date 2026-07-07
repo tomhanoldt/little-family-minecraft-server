@@ -39,6 +39,12 @@ services:
 {% if enable_bedrock_support %}
       - "19132:19132/udp"
 {% endif %}
+{% if enable_home_assistant_stats %}
+      # Loopback-only (127.0.0.1), never reaches UFW or the tailnet - lets
+      # the stats server script on the host itself talk real RCON without
+      # shelling into the container. See roles/minecraft/tasks/ha_stats.yml.
+      - "127.0.0.1:25575:25575"
+{% endif %}
     environment:
       EULA: "TRUE"
       TYPE: "{{ mc_type }}"

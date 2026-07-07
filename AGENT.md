@@ -129,6 +129,21 @@ additionally carry the special `never` tag (currently just
   real, already-deployed Tailscale device name/DNS entry, shared with and
   used by other players already. "Correcting" it would rename the actual
   device and break everyone's saved server address.
+- **Ubuntu's `glances` apt package doesn't include the web-server/API
+  extras** (fastapi/uvicorn/jinja2) - `glances -w` throws
+  `ModuleNotFoundError: fastapi` on a bare apt install. Installed via
+  `pipx install "glances[web]"` instead (`roles/common/tasks/glances.yml`).
+- **A `notify:`-triggered handler doesn't run until end-of-play by
+  default** - fine for most things, but a freshly-templated systemd unit
+  file needs `daemon-reload` to happen *before* the very next task tries
+  to start that service, not after every task in the role has run. Needs
+  an explicit `ansible.builtin.meta: flush_handlers` right after the
+  template task - see `roles/common/tasks/glances.yml` for the pattern.
+- **Passing secrets as CLI arguments makes them visible to any local user
+  via `ps`.** The Home Assistant stats server reads its RCON credential
+  from a single root-only (`0600`) env file instead (`--env-file` path,
+  not the secret itself) - see `roles/minecraft/files/mc_stats_server.py`.
+  Don't reintroduce passwords as script arguments elsewhere either.
 
 ## Docs map
 
@@ -152,4 +167,7 @@ additionally carry the special `never` tag (currently just
   child's Apple ID/Google Account (separate from the Microsoft account)
 - [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - iOS/
   Android app/time limit setup
+- [`docs/home-assistant.md`](docs/home-assistant.md) - optional Glances +
+  game-stats JSON server for a Home Assistant dashboard, polled directly
+  via HA's RESTful sensor (no broker)
 - [`LICENSE`](LICENSE) - MIT

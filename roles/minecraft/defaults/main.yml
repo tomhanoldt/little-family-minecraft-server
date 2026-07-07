@@ -21,3 +21,5 @@ enable_backup: true
 backup_interval: "24h"
 backup_retention_days: 7
 enable_playtime_schedule: false
+enable_home_assistant_stats: false
+mc_stats_port: 25566

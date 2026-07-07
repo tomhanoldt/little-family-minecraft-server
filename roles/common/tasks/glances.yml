@@ -1,0 +1,54 @@
+---
+# Host resource stats (CPU/mem/disk) for Home Assistant, via Glances' own
+# web-server/REST API mode, which HA's built-in "Glances" integration polls
+# directly - no plugin, no push mechanism needed for this one.
+#
+# The Ubuntu apt package does NOT include the web-server extras (fastapi/
+# uvicorn/jinja2) - confirmed the hard way (`glances -w` throws
+# ModuleNotFoundError: fastapi on a bare apt install). pipx installs it
+# isolated from the system's PEP-668-managed Python instead.
+#
+# No Glances-level authentication is configured here: its non-interactive
+# password-file format isn't reliably documented across versions, and
+# guessing at it risks a silently-broken or silently-unauthenticated
+# service. The actual security boundary is the network layer below (UFW +
+# Tailscale ACL tag scoping - only tag:home-assistant can reach this port
+# at all) - see docs/security.md. TODO.md tracks adding Glances' own
+# `glances --password` (one-time, interactive) as defense in depth.
+
+- name: Install pipx
+  ansible.builtin.apt:
+    name: pipx
+    state: present
+
+- name: Install Glances with web/API extras via pipx
+  community.general.pipx:
+    name: glances
+    source: "glances[web]"
+    state: present
+
+- name: Deploy Glances systemd service
+  ansible.builtin.template:
+    src: glances.service.j2
+    dest: /etc/systemd/system/glances.service
+    mode: "0644"
+  notify: Reload systemd daemon
+
+# Flush now, don't wait for end-of-play: on a fresh install systemd has
+# never seen this unit file before, so starting it below would fail
+# without the daemon-reload handler having actually run yet.
+- name: Flush handlers so systemd knows about the new unit file
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start Glances
+  ansible.builtin.systemd:
+    name: glances
+    enabled: true
+    state: started
+
+- name: Allow Glances web/API port only from the Tailscale network
+  community.general.ufw:
+    rule: allow
+    port: "61208"
+    proto: tcp
+    src: "{{ allowed_source_cidr }}"

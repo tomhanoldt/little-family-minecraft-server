@@ -39,6 +39,8 @@ Tailscale. Runs entirely in Docker, set up reproducibly via Ansible.
   Apple ID/Google Account for your kid, ahead of the Microsoft account
 - [`docs/screen-time-controls.md`](docs/screen-time-controls.md) - setting
   up app/time limits on iOS and Android
+- [`docs/home-assistant.md`](docs/home-assistant.md) - optional host + game
+  stats on a Home Assistant dashboard
 - [`AGENT.md`](AGENT.md) - operating notes for anyone (human or AI)
   working in this repo
 - [`TODO.md`](TODO.md) - what's still open

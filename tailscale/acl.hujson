@@ -57,6 +57,12 @@
         // (matches the "ssh" stanza below, which handles auth - this
         // handles the underlying network path).
         {"src": ["autogroup:admin"], "dst": ["tag:minecraft"], "ip": ["tcp:22"]},
+
+        // Home Assistant stats (see docs/home-assistant.md): HA polls both
+        // Glances' web/API port and the game-stats JSON server on the
+        // Minecraft box directly - no broker, so only inbound grants are
+        // needed, nothing FROM tag:minecraft.
+        {"src": ["tag:home-assistant"], "dst": ["tag:minecraft"], "ip": ["tcp:61208", "tcp:25566"]},
     ],
 
     "ssh": [

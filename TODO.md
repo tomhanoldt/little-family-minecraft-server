@@ -56,6 +56,15 @@
   `itzg/mc-backup` has run at least once.
 - [ ] Consider automating `make backup-pull` on a schedule (cron/launchd on
   the admin's Mac) rather than running it manually.
+- [ ] Apply the updated [`tailscale/acl.hujson`](../tailscale/acl.hujson)
+  grant (Glances + game-stats inbound, one combined grant now) via the
+  admin console, flip `enable_home_assistant_stats: true`, and re-deploy -
+  see [`docs/home-assistant.md`](docs/home-assistant.md). Also verify the
+  RCON `list` output parsing (`mc_stats_server.py`) against a session
+  with an actual player online, not just the 0-players case tested so far.
+- [ ] Once the above is live, add Glances' own `--password` (one-time,
+  interactive) for a second layer of auth on top of the network scoping -
+  see [`docs/home-assistant.md`](docs/home-assistant.md#whats-deliberately-not-done).
 
 ## Security watch items
 
@@ -65,15 +74,11 @@
 - [ ] Watch for `mc-image-helper` bumping its bundled `scala-library` past
   2.13.9 (resolves `CVE-2022-36944`, currently tracked but not suppressed).
 
-## Before publishing this repo
+## Publishing this repo
 
-Decided: **this repo will be public**, with a blog post about it at
-[www.tomhanoldt.info](https://www.tomhanoldt.info) later. Git history has
-already been scrubbed (author identity, no secrets/PII in any commit) in
-preparation, but no remote exists yet and nothing has been pushed.
-
-- [ ] Create the GitHub repo, push, confirm the CI workflows (`lint.yml`,
-  `verify.yml`, `security.yml`) actually pass there.
+- [x] ~~Create the GitHub repo, push, confirm CI passes there~~ - **done**:
+  public at [tomhanoldt/little-family-minecraft-server](https://github.com/tomhanoldt/little-family-minecraft-server),
+  `main` has basic branch protection (no force-push, no deletion).
 - [ ] Enable Dependabot **alerts** in repo settings (Settings → Code
   security and analysis) - `dependabot.yml` alone only covers
   version-update PRs, not the separate vulnerability-alert toggle.
@@ -85,3 +90,4 @@ preparation, but no remote exists yet and nothing has been pushed.
   default, that needs to be turned on explicitly even for public repos.
 - [ ] Double check the `LICENSE` file's year/attribution still reads
   correctly whenever this is actually pushed.
+- [ ] The planned blog post at [www.tomhanoldt.info](https://www.tomhanoldt.info) is drafted.

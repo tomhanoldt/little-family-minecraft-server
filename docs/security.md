@@ -35,11 +35,22 @@ home network or the kids' safety," not "withstand nation-state attackers."
   manually via the Tailscale admin console (ACLs aren't Ansible-managed),
   so treat that file as documentation of intent, not a live source of truth
   - check the admin console for what's actually applied.
+- The optional Home Assistant stats feature (off by default) adds one more
+  narrow grant, inbound only - HA polling both Glances and the game-stats
+  JSON server on the Minecraft box, nothing pushed the other way (no
+  broker) - see [home-assistant.md](home-assistant.md) for the full
+  reasoning. Neither Glances nor the stats server has a login of its
+  own; the ACL grant plus UFW's tailnet-only rule are the actual
+  boundary for those ports.
 - RCON (used internally by `mc-backup` to coordinate backups) is never
-  published to any network interface - it only exists on Docker's internal
-  bridge network between `mc` and `mc-backup`. It's also given a real,
-  generated password (`mc_rcon_password`) rather than relying on the image's
-  default, which has a documented history of falling back to a weak value.
+  published to any network interface by default - it only exists on
+  Docker's internal bridge network between `mc` and `mc-backup`. It's
+  also given a real, generated password (`mc_rcon_password`) rather than
+  relying on the image's default, which has a documented history of
+  falling back to a weak value. If `enable_home_assistant_stats` is on,
+  it's additionally published to `127.0.0.1:25575` only (confirmed via
+  `docker port`, never the tailnet or LAN) - see
+  [home-assistant.md](home-assistant.md).
 
 ## Container hardening
 

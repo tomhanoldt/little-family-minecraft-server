@@ -63,6 +63,11 @@
     state: present
     pull: "always"
 
+- name: Set up Home Assistant game-stats JSON server
+  ansible.builtin.import_tasks: ha_stats.yml
+  tags: home_assistant_stats
+  when: enable_home_assistant_stats | bool
+
 - name: Cronjob for automatic start (playtime schedule)
   ansible.builtin.cron:
     name: "minecraft-server-start"
