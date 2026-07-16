@@ -1,36 +1,41 @@
-# Lets every whitelisted player (not just ops) run /gamemode themselves,
-# without granting full op/admin access - see docs/plugins.md.
+# Server-root permissions.yml - lets every player (not just ops) run a few
+# self-only EssentialsX commands, without granting op/admin access.
 #
-# Two separate grants are needed here, not one: EssentialsX registers its
-# own "gamemode" command (same label as vanilla's), and Bukkit gives
-# plugin commands priority over the vanilla fallback of the same name -
-# so in practice players' /gamemode goes through Essentials, not vanilla,
-# and is gated on essentials.gamemode, not minecraft.command.gamemode.
-# Granting only the vanilla node (as this file used to) does nothing on a
-# server with EssentialsX installed. The vanilla node is kept too in case
-# Essentials is ever disabled and the vanilla command becomes reachable
-# again.
+# CRITICAL FORMAT NOTE: this is the *server-root* permissions.yml, whose
+# permission nodes live at the TOP LEVEL of the file. Do NOT wrap them in a
+# `permissions:` key - that wrapper is plugin.yml syntax. If wrapped, Bukkit
+# registers a single useless permission literally named "permissions" and
+# silently ignores every real node, so nothing is granted to anyone. This
+# file shipped wrapped for a while and *every* grant below was dead (both
+# /gamemode and /tp) until it was flattened - the symptom was non-ops
+# getting "was denied access to command" while ops worked fine.
+# Verified against Paper's CraftServer.loadCustomPermissions().
 #
-# Unlike vanilla's single flat node, Essentials actually splits self vs.
-# other players (essentials.gamemode.others/.all) - only the self-only
-# node is granted here, so non-ops can toggle their OWN gamemode but not
-# anyone else's.
+# /gamemode: EssentialsX registers its own gamemode command under the same
+# label as vanilla's, and Bukkit gives the plugin command priority over the
+# vanilla fallback - so a player's /gamemode routes through Essentials and is
+# gated on essentials.gamemode, not minecraft.command.gamemode. Both are
+# granted; the vanilla node is a fallback if Essentials is ever disabled.
 #
-# The same EssentialsX-priority story applies to /tp: Essentials registers
-# its own "tp" command under the vanilla label, so a player's /tp is gated
-# on essentials.tp, not minecraft.command.teleport - hence both nodes below.
-# essentials.tp covers teleporting yourself to another player (/tp <player>);
-# essentials.tp.position covers /tp <x> <y> <z>. essentials.tp.others (moving
-# OTHER players around) is deliberately left at its op-only default, so a
-# non-op can teleport themselves but can't yank anyone else about.
-permissions:
-  minecraft.command.gamemode:
-    default: true
-  essentials.gamemode:
-    default: true
-  minecraft.command.teleport:
-    default: true
-  essentials.tp:
-    default: true
-  essentials.tp.position:
-    default: true
+# /tp: DELIBERATELY the opposite - EssentialsX's tp command is disabled (see
+# disabled-commands in its config.yml, set from roles/minecraft/tasks/main.yml)
+# so /tp falls through to the VANILLA command, whose target-selector argument
+# is the only thing Bedrock (Geyser) can render as an online-player picker on
+# tablet/iOS - Essentials' plain-string /tp gives no suggestions there. Vanilla
+# /tp is gated on minecraft.command.teleport, so that's the node granted here
+# (no essentials.tp - that command no longer exists). See docs/plugins.md.
+#
+# Scope note: /gamemode stays self-only (essentials.gamemode.others/.all are
+# left op-only). /tp does NOT - vanilla's minecraft.command.teleport is a
+# single flat node with no self-vs-others split, so granting it lets non-ops
+# also move OTHER players (/tp Kid1 Kid2), teleport to coordinates, and use
+# @-selectors. Accepted on purpose as the cost of the Bedrock player picker;
+# on this small family server that extra reach is tolerable. If it's ever
+# abused, the fix is to re-enable Essentials' self-only tp instead (losing
+# Bedrock suggestions again) - see docs/plugins.md.
+minecraft.command.gamemode:
+  default: true
+essentials.gamemode:
+  default: true
+minecraft.command.teleport:
+  default: true

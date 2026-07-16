@@ -124,23 +124,30 @@ additionally carry the special `never` tag (currently just
   where an empty file left by Paper itself means `force: false` never
   actually writes anything, forever. Check whether "already exists"
   really means "already has real content" before reusing this pattern.
-- **Adding a *new* permission node to `permissions.yml` needs a full
-  server restart, not `/reload permissions`.** A live `/reload
-  permissions` can flip the default of a node that already exists (e.g.
-  one EssentialsX declares in its own bundled `plugin.yml`, like
-  `essentials.gamemode`), but it does *not* reliably attach a
-  never-before-registered node to players already online. A node we
-  introduce that the plugin never declares (e.g. `essentials.tp`, whose
-  EssentialsX command block has no `permission:` field - the base node is
-  `essentials.<label>`, derived by the command framework) only takes
-  effect once Bukkit loads `permissions.yml` fresh at boot. Symptom while
-  it's still broken: non-ops get `... was denied access to command` in the
-  server log while ops work fine. So: editing an existing node -> reload;
-  adding a new node -> `docker restart minecraft` (see docs/plugins.md).
-  Verify a plugin's *real* permission node by extracting `plugin.yml` (and
-  the relevant `Command*.class` strings) from its jar rather than trusting
-  a wiki - `unzip` is installed on the host for exactly this (the
-  `base_packages` tag in `roles/common`).
+- **The server-root `permissions.yml` puts nodes at the TOP LEVEL - no
+  `permissions:` wrapper.** That wrapper is `plugin.yml` syntax; the
+  standalone `permissions.yml` is parsed as `Map<permissionName,
+  attributes>` at column zero (verified against Paper's
+  `CraftServer.loadCustomPermissions()`). Wrapped, Bukkit registers one
+  useless permission literally named `permissions` and silently ignores
+  every real node - our file shipped wrapped for months and **both
+  `/gamemode` and `/tp` were dead for non-ops the whole time**, even though
+  a comment claimed gamemode worked (it had only ever been "confirmed" by
+  checking the node name against the jar, never an actual in-game non-op
+  use). Symptom: non-ops get `... was denied access to command` in the log
+  while ops work fine. Fix is just to flatten the file. Paper reads it at
+  **startup**, so restart the `mc` container (or `/reload permissions`)
+  after editing. Lesson beyond the format: for permissions specifically,
+  "confirmed" must mean an actual non-op ran the command - node-name
+  inspection is necessary but nowhere near sufficient.
+- **EssentialsX gates its commands on `essentials.<label>`, not the vanilla
+  node.** It re-registers `gamemode`/`tp`/etc. under the same labels as
+  vanilla and Bukkit prioritises the plugin command, so granting only
+  `minecraft.command.*` does nothing. Traced through 2.21.0's source: the
+  dispatcher does a plain `player.hasPermission("essentials.<label>")` with
+  no op fallback, so `default: true` on that node is what grants it. Verify
+  a plugin's real node from its jar (`unzip` is on the host via the
+  `base_packages` tag in `roles/common`) or its source, not a wiki.
 - **`tailscale_hostname: "little-family-mincraft-server"` is spelled with
   "mincraft" (missing the "e") on purpose, not a typo to fix** - it's the
   real, already-deployed Tailscale device name/DNS entry, shared with and

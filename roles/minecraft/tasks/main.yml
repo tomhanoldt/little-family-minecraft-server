@@ -40,7 +40,7 @@
     force: false
   when: enable_chat_filter | bool
 
-- name: Pre-seed permissions.yml so non-ops can use /gamemode themselves
+- name: Pre-seed permissions.yml so non-ops can use /gamemode and /tp themselves
   ansible.builtin.copy:
     src: permissions.yml
     dest: "{{ mc_data_dir }}/data/permissions.yml"
@@ -49,6 +49,29 @@
     # creates an EMPTY permissions.yml placeholder on first boot, which
     # force: false would then treat as "already exists" and never actually
     # write our content into. Always sync this one.
+
+- name: Check whether EssentialsX has generated its config yet
+  ansible.builtin.stat:
+    path: "{{ mc_data_dir }}/data/plugins/Essentials/config.yml"
+  register: essentials_config
+  when: enable_essentials | bool
+
+- name: Disable EssentialsX /tp so vanilla /tp (with Bedrock's player picker) takes the label
+  ansible.builtin.lineinfile:
+    path: "{{ mc_data_dir }}/data/plugins/Essentials/config.yml"
+    insertafter: '^disabled-commands:'
+    regexp: '^\s*-\s*tp\s*$'
+    line: "  - tp"
+  # Bedrock (Geyser) only renders an online-player picker for a real target
+  # selector argument, which vanilla /tp has and Essentials' plain-string /tp
+  # does not - see docs/plugins.md. Disabling the Essentials command hands /tp
+  # to vanilla for everyone (Java keeps tab-complete). Requires the config to
+  # exist first: EssentialsX writes it on its first boot, so on a brand-new
+  # server this applies on the next deploy. A container restart is needed for
+  # the command-map change to take effect.
+  when:
+    - enable_essentials | bool
+    - essentials_config.stat.exists | default(false)
 
 - name: Generate docker-compose.yml from template
   ansible.builtin.template:

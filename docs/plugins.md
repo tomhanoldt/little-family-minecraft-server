@@ -104,64 +104,145 @@ These were all found by actually booting the real containers locally
   runs standalone (confirmed in the boot log) - and was patched in
   15.0.0 regardless; we're on 15.12.4.
 
-## Letting non-ops use /gamemode themselves
+## Why the server stays pinned to 1.21.4 (the update chain)
 
-By default `/gamemode` requires op. `roles/minecraft/files/permissions.yml`
-grants `minecraft.command.gamemode` and `essentials.gamemode` to everyone
-(`default: true`) so whitelisted-but-not-opped players (e.g. a parent or
-kid who shouldn't have admin commands) can toggle their own gamemode.
+We deliberately do **not** chase the newest Minecraft version, because a
+chain of dependencies makes a naive bump silently drop the two safety
+features that matter most here. Walking the chain, top to bottom:
 
-**Both grants are needed, not one.** EssentialsX registers its own
-`gamemode` command under the same label as vanilla's, and Bukkit gives
-plugin commands priority over the vanilla fallback of the same name - so
-in practice a player's `/gamemode` is routed through Essentials, gated on
-`essentials.gamemode`, not vanilla's `minecraft.command.gamemode`.
-Granting only the vanilla node (an earlier version of this file did)
-looks correct but does nothing with EssentialsX installed - confirmed by
-inspecting `EssentialsX-2.21.0.jar`'s bundled `plugin.yml` on the live
-server, which shows its own `gamemode:` command entry and permission
-tree. The vanilla node is kept anyway in case Essentials is ever
-disabled.
+1. **`mc_version` is pinned to `1.21.4`** (`VERSION_FROM_MODRINTH_PROJECTS:
+   false`, so plugins follow the server, not the other way around).
+2. **Because CoreProtect and ChatFilter gate it.** These are grief-rollback
+   (`/co rollback`) and chat moderation - the features we least want to lose
+   on a kids' server. Both currently have **no build for `26.x`** (Mojang's
+   post-`1.21.11` year-based versions), verified against Modrinth's API.
+   Bumping `mc_version` past what they support would load the server fine
+   but leave those two plugins behind, silently.
+3. **Geyser is the odd one out** - it's fetched at `latest` on every deploy
+   (no pin, `beta` channel) and now speaks the newer `26.x` Java protocol.
+   On its own that broke Bedrock joins ("server needs an update or install
+   ViaVersion").
+4. **ViaVersion bridges that gap** so the latest Geyser can still talk to
+   our `1.21.4` server - letting us hold the version without cutting off
+   Bedrock crossplay.
+5. **Everything else (EssentialsX, GriefPrevention, SkinsRestorer, ...) is
+   held to its newest build that still lists `1.21.4`.** itzg resolves each
+   Modrinth slug to the newest version whose `game_versions` includes our
+   pinned version and nothing newer - e.g. EssentialsX stays on `2.21.0`
+   because `2.21.1`/`2.22.0` dropped `1.21.4` from their compatibility tags,
+   even though they'd very likely still run. This is correct, not a bug.
 
-Unlike vanilla's single flat node, Essentials actually splits self vs.
-other players (`essentials.gamemode.others`/`essentials.gamemode.all`,
-both left at their default `op`-only) - so, unlike the vanilla-only
-approach, non-ops here can toggle their *own* gamemode but not anyone
-else's.
+**Exit condition:** the whole chain can finally move up once **both**
+CoreProtect and ChatFilter ship a build for the target newer version. That's
+the specific thing to watch for.
 
-## Letting non-ops use /tp themselves
+### Checking for updates without breaking the pin
 
-The same file also grants `/tp` to everyone, and for the same reason it
-needs the Essentials node, not just the vanilla one: EssentialsX registers
-its own `tp` command under the vanilla label, so a player's `/tp` is routed
-through Essentials and gated on `essentials.tp`, not
-`minecraft.command.teleport`. Both are granted (`default: true`), the
-vanilla node purely as a fallback if Essentials is ever disabled.
+- **`make server-check-plugin-updates`** (Ansible tag `plugin_update_check`)
+  reads the itzg Modrinth manifest and reports, per plugin, the *newest
+  build that still supports the pinned `mc_version`* (the safe target) versus
+  the *newest overall* and whether it still supports us. Read-only. Watch
+  CoreProtect/ChatFilter's "newest overall" line - when it starts covering a
+  newer MC version, the exit condition above is met.
+- **`make server-update-plugins`** (tag `plugin_update`) restarts the `mc`
+  container so itzg re-resolves Modrinth and pulls the newest builds - but
+  *only ever ones compatible with the pinned `mc_version`*, which is exactly
+  the safety guarantee that respects the chain above. It never pulls an
+  incompatible version and never touches `mc_version` itself. Briefly
+  disconnects players.
 
-The grant is scoped to *self*-teleport, mirroring the `/gamemode` approach:
-`essentials.tp` (teleport yourself to another player, `/tp <player>`) and
-`essentials.tp.position` (`/tp <x> <y> <z>`) are opened up, but
-`essentials.tp.others` - moving *other* players around - is left at its
-op-only default, so a non-op can teleport themselves but can't drag anyone
-else about.
+## Letting non-ops use /gamemode and /tp themselves
 
-**A brand-new `permissions.yml` node needs a full server *restart*, not
-`/reload permissions`.** This is the one real difference from `/gamemode`,
-and it's easy to get wrong: `essentials.gamemode` is a permission
-EssentialsX *declares in its own bundled `plugin.yml`* (verified by
-extracting `plugin.yml` from `EssentialsX-2.21.0.jar` - it's a child of the
-`essentials.gamemode.*` node), so it's registered at every boot and a live
-`/reload permissions` can flip its default. `essentials.tp` is **not**
-declared anywhere in EssentialsX's `plugin.yml` (its command block has no
-`permission:` field; the base node is derived by the command framework as
-`essentials.<label>`) - it only comes into existence *because* our
-`permissions.yml` introduces it. A live `/reload permissions` reloads the
-file but does not reliably attach a never-before-registered node to players
-already online, so it keeps failing for non-ops (`... was denied access to
-command` in the server log) until the container is restarted and Bukkit
-loads `permissions.yml` fresh at startup. Rule of thumb: **editing an
-existing node -> `/reload permissions` is enough; adding a new node ->
-restart the `minecraft` container** (or have every player reconnect).
+By default `/gamemode` and `/tp` require op. `roles/minecraft/files/permissions.yml`
+grants them to everyone (`default: true`) so whitelisted-but-not-opped
+players (a parent or kid who shouldn't have admin commands) can toggle
+their own gamemode and teleport.
+
+**The two commands are wired deliberately differently:**
+
+- **`/gamemode` routes through EssentialsX.** Essentials registers its own
+  `gamemode` command under vanilla's label and Bukkit gives the plugin
+  command priority, so the grant that matters is `essentials.gamemode`, not
+  `minecraft.command.gamemode`. Granting only the vanilla node looks correct
+  but does nothing with Essentials installed. Traced through EssentialsX
+  2.21.0's source to be sure: the dispatcher checks
+  `user.isAuthorized(cmd, "essentials.")`, a plain
+  `player.hasPermission("essentials.<label>")` with no op fallback - so
+  `default: true` on that node is exactly what grants it. The vanilla node
+  is kept as a fallback if Essentials is ever disabled. Scope stays
+  self-only: `essentials.gamemode.others`/`.all` are left op-only.
+- **`/tp` routes to VANILLA, on purpose** - Essentials' `tp` command is put
+  in `disabled-commands` (see below and `roles/minecraft/tasks/main.yml`) so
+  the label falls through to vanilla, whose target-selector argument is the
+  only thing that gives Bedrock/iOS a player picker (see "Bedrock command
+  suggestions" below). So the granted node is `minecraft.command.teleport`
+  (no `essentials.tp` - that command no longer exists). **Caveat:** vanilla
+  `/tp` is a single flat permission with no self-vs-others split, so non-ops
+  can now also move *other* players (`/tp Kid1 Kid2`), teleport to
+  coordinates, and use `@`-selectors - accepted as the price of the Bedrock
+  picker on this small family server.
+
+### The bug that made this silently do nothing for months
+
+This file originally wrapped every node under a top-level `permissions:`
+key:
+
+```yaml
+permissions:          # WRONG for the server-root permissions.yml
+  essentials.tp:
+    default: true
+```
+
+That `permissions:` wrapper is **plugin.yml** syntax. The *server-root*
+`permissions.yml` expects permission nodes at the **top level** of the file
+(verified against Paper's `CraftServer.loadCustomPermissions()`, which
+parses it as `Map<permissionName, attributes>`). Wrapped, Bukkit registered
+a single useless permission literally named `permissions` and silently
+ignored every real node - so **both `/gamemode` and `/tp` were dead for
+non-ops the entire time** (the earlier "confirmed" note only ever checked
+the *node name* against the jar, never an actual in-game non-op use). The
+symptom: non-ops get `... was denied access to command` in the server log
+while ops work fine. The fix is just to flatten it - nodes at column zero,
+no wrapper:
+
+```yaml
+essentials.gamemode:  # correct
+  default: true
+```
+
+Paper reads `permissions.yml` at **startup**, so after editing it the `mc`
+container needs a restart (or `/reload permissions`) for the change to take
+effect.
+
+## Bedrock command suggestions (why /tp is vanilla, not EssentialsX)
+
+Bedrock/iOS players (via Geyser) get no argument suggestions - no online
+player picker - for most plugin commands, so they'd have to type a full
+name for `/tp`. This is a hard Geyser/Bedrock limitation, not a config flag:
+
+- Bedrock builds its command UI from a **static** list the server sends
+  once (Geyser's translation of the Java command tree). It never
+  round-trips per keystroke, so Java's live tab-completion (which is how
+  EssentialsX suggests player names) simply isn't available on Bedrock.
+- Bedrock *does* render a native picker - listing online players and
+  `@`-selectors - but **only for arguments that are a real target selector**
+  (`CommandParam.TARGET`), which Geyser maps from a vanilla/Brigadier
+  entity argument. **Vanilla `/tp` has one; EssentialsX's `/tp` takes a
+  plain greedy string, which gets no picker.**
+- Geyser's `command-suggestions: true` (already set) only controls whether
+  the tree is sent at all; it does not turn a string argument into a picker.
+
+So to give tablet/iOS players a player picker, `/tp` must be the vanilla
+command. We disable EssentialsX's version via `disabled-commands: [tp]` in
+its `config.yml`, set idempotently from `roles/minecraft/tasks/main.yml`
+(the plugin writes that config on first boot, so on a brand-new server the
+task applies on the next deploy; a container restart is needed for the
+command-map change to load). Confirmed the handover by running a bare `tp`
+in the server console and getting vanilla's Brigadier error
+(`Unknown or incomplete command ... minecraft:tp<--[HERE]`) rather than
+Essentials' usage text. The trade-off (non-ops can move other players; loss
+of Essentials teleport warmup/cooldown/`/back` integration) is covered in
+the permission-scope note above and in `permissions.yml`.
 
 ## Whitelisting Bedrock/Floodgate players
 
