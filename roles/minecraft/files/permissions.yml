@@ -15,8 +15,22 @@
 # other players (essentials.gamemode.others/.all) - only the self-only
 # node is granted here, so non-ops can toggle their OWN gamemode but not
 # anyone else's.
+#
+# The same EssentialsX-priority story applies to /tp: Essentials registers
+# its own "tp" command under the vanilla label, so a player's /tp is gated
+# on essentials.tp, not minecraft.command.teleport - hence both nodes below.
+# essentials.tp covers teleporting yourself to another player (/tp <player>);
+# essentials.tp.position covers /tp <x> <y> <z>. essentials.tp.others (moving
+# OTHER players around) is deliberately left at its op-only default, so a
+# non-op can teleport themselves but can't yank anyone else about.
 permissions:
   minecraft.command.gamemode:
     default: true
   essentials.gamemode:
+    default: true
+  minecraft.command.teleport:
+    default: true
+  essentials.tp:
+    default: true
+  essentials.tp.position:
     default: true

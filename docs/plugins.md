@@ -129,6 +129,40 @@ both left at their default `op`-only) - so, unlike the vanilla-only
 approach, non-ops here can toggle their *own* gamemode but not anyone
 else's.
 
+## Letting non-ops use /tp themselves
+
+The same file also grants `/tp` to everyone, and for the same reason it
+needs the Essentials node, not just the vanilla one: EssentialsX registers
+its own `tp` command under the vanilla label, so a player's `/tp` is routed
+through Essentials and gated on `essentials.tp`, not
+`minecraft.command.teleport`. Both are granted (`default: true`), the
+vanilla node purely as a fallback if Essentials is ever disabled.
+
+The grant is scoped to *self*-teleport, mirroring the `/gamemode` approach:
+`essentials.tp` (teleport yourself to another player, `/tp <player>`) and
+`essentials.tp.position` (`/tp <x> <y> <z>`) are opened up, but
+`essentials.tp.others` - moving *other* players around - is left at its
+op-only default, so a non-op can teleport themselves but can't drag anyone
+else about.
+
+**A brand-new `permissions.yml` node needs a full server *restart*, not
+`/reload permissions`.** This is the one real difference from `/gamemode`,
+and it's easy to get wrong: `essentials.gamemode` is a permission
+EssentialsX *declares in its own bundled `plugin.yml`* (verified by
+extracting `plugin.yml` from `EssentialsX-2.21.0.jar` - it's a child of the
+`essentials.gamemode.*` node), so it's registered at every boot and a live
+`/reload permissions` can flip its default. `essentials.tp` is **not**
+declared anywhere in EssentialsX's `plugin.yml` (its command block has no
+`permission:` field; the base node is derived by the command framework as
+`essentials.<label>`) - it only comes into existence *because* our
+`permissions.yml` introduces it. A live `/reload permissions` reloads the
+file but does not reliably attach a never-before-registered node to players
+already online, so it keeps failing for non-ops (`... was denied access to
+command` in the server log) until the container is restarted and Bukkit
+loads `permissions.yml` fresh at startup. Rule of thumb: **editing an
+existing node -> `/reload permissions` is enough; adding a new node ->
+restart the `minecraft` container** (or have every player reconnect).
+
 ## Whitelisting Bedrock/Floodgate players
 
 Bedrock players get a literal `.` (dot) prefix on their in-game Bedrock

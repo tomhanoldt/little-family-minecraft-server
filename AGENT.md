@@ -124,6 +124,23 @@ additionally carry the special `never` tag (currently just
   where an empty file left by Paper itself means `force: false` never
   actually writes anything, forever. Check whether "already exists"
   really means "already has real content" before reusing this pattern.
+- **Adding a *new* permission node to `permissions.yml` needs a full
+  server restart, not `/reload permissions`.** A live `/reload
+  permissions` can flip the default of a node that already exists (e.g.
+  one EssentialsX declares in its own bundled `plugin.yml`, like
+  `essentials.gamemode`), but it does *not* reliably attach a
+  never-before-registered node to players already online. A node we
+  introduce that the plugin never declares (e.g. `essentials.tp`, whose
+  EssentialsX command block has no `permission:` field - the base node is
+  `essentials.<label>`, derived by the command framework) only takes
+  effect once Bukkit loads `permissions.yml` fresh at boot. Symptom while
+  it's still broken: non-ops get `... was denied access to command` in the
+  server log while ops work fine. So: editing an existing node -> reload;
+  adding a new node -> `docker restart minecraft` (see docs/plugins.md).
+  Verify a plugin's *real* permission node by extracting `plugin.yml` (and
+  the relevant `Command*.class` strings) from its jar rather than trusting
+  a wiki - `unzip` is installed on the host for exactly this (the
+  `base_packages` tag in `roles/common`).
 - **`tailscale_hostname: "little-family-mincraft-server"` is spelled with
   "mincraft" (missing the "e") on purpose, not a typo to fix** - it's the
   real, already-deployed Tailscale device name/DNS entry, shared with and
