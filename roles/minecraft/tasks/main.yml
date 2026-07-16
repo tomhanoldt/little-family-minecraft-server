@@ -141,6 +141,61 @@
   when: mc_type | upper == 'PAPER' and mc_version | upper != 'LATEST'
   tags: paper_update_check
 
+- name: Read the itzg Modrinth manifest (which plugin projects/versions are installed)
+  ansible.builtin.slurp:
+    src: "{{ mc_data_dir }}/data/.modrinth-manifest.json"
+  register: modrinth_manifest
+  tags: plugin_update_check
+
+- name: Query Modrinth for each managed plugin's published versions
+  ansible.builtin.uri:
+    url: "https://api.modrinth.com/v2/project/{{ item }}/version"
+    headers:
+      User-Agent: "little-family-mincraft-server-ansible/1.0"
+    return_content: true
+  register: plugin_modrinth_versions
+  loop: "{{ (modrinth_manifest.content | b64decode | from_json)['projects'] }}"
+  loop_control:
+    label: "{{ item }}"
+  tags: plugin_update_check
+
+- name: Report plugin updates, respecting the pinned mc_version
+  ansible.builtin.debug:
+    # "newest for {{ mc_version }}" is the safe target - the newest build that
+    # still lists our pinned version, i.e. exactly what a plugin refresh would
+    # pull. "newest overall" flags a plugin that has moved past us: if it no
+    # longer supports {{ mc_version }} we deliberately can't take it (see the
+    # pin chain in docs/plugins.md), and for the pin's gatekeepers (coreprotect,
+    # chat_filter) a newest-overall that starts supporting a newer MC version
+    # is the signal the whole server could finally be bumped.
+    # The "supports?" flag is computed across ALL platform builds of the newest
+    # version_number (Modrinth lists Paper/Spigot/Fabric/... as separate entries
+    # under one version), so a plugin like Geyser isn't falsely reported as
+    # dropping us just because its newest-by-date build happens to be the Fabric one.
+    msg: >-
+      {{ item.item }}: newest for {{ mc_version }} =
+      {{ (item.json | selectattr('game_versions', 'contains', mc_version)
+          | map(attribute='version_number') | first) | default('NONE (moved past us)', true) }}
+      | newest overall = {{ item.json[0].version_number }}
+      ({{ item.json[0].version_type }}, supports {{ mc_version }}?
+      {{ mc_version in (item.json
+         | selectattr('version_number', 'equalto', item.json[0].version_number)
+         | map(attribute='game_versions') | flatten | unique | list) }})
+  loop: "{{ plugin_modrinth_versions.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  tags: plugin_update_check
+
+- name: Refresh plugins to the newest mc_version-compatible builds (itzg re-resolves on restart; never pulls an incompatible version)
+  community.docker.docker_compose_v2:
+    project_src: "{{ mc_data_dir }}"
+    state: restarted
+    services:
+      - mc
+  tags:
+    - never
+    - plugin_update
+
 - name: Restore a chosen backup onto this server (only runs when explicitly tagged)
   ansible.builtin.import_tasks: restore_backup.yml
   tags:

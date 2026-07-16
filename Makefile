@@ -145,6 +145,18 @@ server-check-updates:
 server-check-paper-updates:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags paper_update_check
 
+# Reports, per plugin, the newest Modrinth build that still supports the
+# pinned mc_version (safe to take) vs the newest overall (may have moved
+# past us). Read-only - see docs/plugins.md for how the version pin works.
+server-check-plugin-updates:
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags plugin_update_check
+
+# Restarts the mc container so itzg re-resolves Modrinth and pulls the
+# newest mc_version-COMPATIBLE plugin builds (never an incompatible one -
+# that's the whole safety guarantee). Briefly disconnects players.
+server-update-plugins:
+	docker compose run --rm ansible ansible-playbook playbook.yml --tags plugin_update
+
 # Applies pending OS package updates on the mini-PC.
 server-update:
 	docker compose run --rm ansible ansible-playbook playbook.yml --tags system_update

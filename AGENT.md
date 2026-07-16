@@ -55,9 +55,11 @@ description or a module's docs at face value.
 Tasks that shouldn't run during a normal full deploy are tagged so they
 only fire when explicitly requested:
 `tailscale`, `firewall`, `ssh_hardening`, `sudo_nopasswd`, `os_cleanup`,
-`vuln_check`, `system_update`, `paper_update_check`. Destructive ones
-additionally carry the special `never` tag (currently just
-`backup_restore`) - so not even `--tags all` can trigger them by accident.
+`vuln_check`, `system_update`, `paper_update_check`, `plugin_update_check`.
+Destructive/disruptive ones additionally carry the special `never` tag
+(currently `backup_restore` and `plugin_update` - the latter restarts the
+`mc` container, kicking players) - so not even `--tags all` can trigger them
+by accident; they only run when their own tag is named explicitly.
 
 ## Known environment quirks (don't re-discover these)
 
