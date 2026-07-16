@@ -5,6 +5,15 @@
     state: absent
   tags: always
 
+- name: Install base utility packages
+  ansible.builtin.apt:
+    name:
+      - unzip
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  tags: base_packages
+
 - name: Update system packages
   ansible.builtin.apt:
     update_cache: true
