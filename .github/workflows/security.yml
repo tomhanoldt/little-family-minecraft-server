@@ -27,7 +27,7 @@ jobs:
           format: "sarif"
           output: "trivy-ansible-tooling.sarif"
           severity: "CRITICAL,HIGH"
-      - uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+      - uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         if: always()
         with:
           sarif_file: "trivy-ansible-tooling.sarif"
@@ -55,7 +55,7 @@ jobs:
           output: "trivy-minecraft.sarif"
           severity: "CRITICAL,HIGH"
           trivyignores: ".trivyignore"
-      - uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+      - uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         if: always()
         with:
           sarif_file: "trivy-minecraft.sarif"
@@ -75,7 +75,7 @@ jobs:
           format: "sarif"
           output: "trivy-config.sarif"
           severity: "CRITICAL,HIGH"
-      - uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+      - uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         if: always()
         with:
           sarif_file: "trivy-config.sarif"
@@ -97,7 +97,7 @@ jobs:
           scanners: "secret"
           format: "sarif"
           output: "trivy-secrets.sarif"
-      - uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+      - uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         if: always()
         with:
           sarif_file: "trivy-secrets.sarif"
